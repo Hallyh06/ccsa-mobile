@@ -4,11 +4,11 @@
     "slug": "ccsa-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/cosmologo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/cosmologo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,12 +17,24 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/cosmologo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.llkhalipha.ccsamobile"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/cosmologo.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "34d0f951-1b67-4d33-8508-1df530f007b0"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/34d0f951-1b67-4d33-8508-1df530f007b0"
     }
   }
 }
