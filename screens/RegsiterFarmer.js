@@ -131,6 +131,7 @@ const RegisterFarmer = () => {
           <Picker.Item label="Gombe" value="Gombe" />
           <Picker.Item label="Imo" value="Imo" />
           <Picker.Item label="Jigawa" value="Jigawa" />
+          <Picker.Item label="Jos" value="Jos" />
           <Picker.Item label="Kaduna" value="Kaduna" />
           <Picker.Item label="Kano" value="Kano" />
           <Picker.Item label="Katsina" value="Katsina" />
@@ -192,6 +193,7 @@ const RegisterFarmer = () => {
             <Picker.Item label="Gombe" value="Gombe" />
             <Picker.Item label="Imo" value="Imo" />
             <Picker.Item label="Jigawa" value="Jigawa" />
+            <Picker.Item label="Jos" value="Jos" />
             <Picker.Item label="Kaduna" value="Kaduna" />
             <Picker.Item label="Kano" value="Kano" />
             <Picker.Item label="Katsina" value="Katsina" />

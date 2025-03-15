@@ -79,13 +79,21 @@ const Dashboard = () => {
 
       {/* Update to bring menu forward */}
       <Animated.View style={[styles.menuContainer, { left: menuAnim, zIndex: 1, opacity: menuOpen ? 1 : 0.8 }]}>  
+      <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("RegsiterFarmer")}>
+          <Ionicons name="person-add" size={20} color="white" />
+          <Text style={styles.menuText}>Register Farmer</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("FarmerList")}>
           <Ionicons name="list" size={20} color="white" />
           <Text style={styles.menuText}>Farmer List</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("RegsiterFarmer")}>
-          <Ionicons name="person-add" size={20} color="white" />
-          <Text style={styles.menuText}>Register Farmer</Text>
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("SearchFarmer")}>
+          <Ionicons name="search" size={20} color="white" />
+          <Text style={styles.menuText}>Search Farmers</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("GenerateFarmerData")}>
+          <Ionicons name="document" size={20} color="white" />
+          <Text style={styles.menuText}>Generate certificate</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
           <Ionicons name="log-out" size={20} color="white" />
@@ -200,7 +208,7 @@ const styles = {
   container: { flex: 1, backgroundColor: "#F4F4F4" },
   header: { backgroundColor: "#002244", },
   menuContainer: {
-    position: "absolute", left: -250, top: 60, width: 200,
+    position: "absolute", left: -250, top: 60, width: 250,
     backgroundColor: "#002244", paddingVertical: 20,
     borderRadius: 10, elevation: 10, shadowColor: "#000", marginTop: 25
   },

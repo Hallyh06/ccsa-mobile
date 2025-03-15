@@ -6,6 +6,8 @@ import FarmerList from "./screens/FarmerList";
 import FarmerDetail from "./screens/FarmerDetail";
 import RegsiterFarmer from "./screens/RegsiterFarmer";
 import ForgetPassword from "./screens/ForgotPassword";
+import SearchFaarmers from "./screens/SearchFaarmers";
+import GenerateFarmerData from "./screens/GenerateFarmerData";
 
 const Stack = createStackNavigator();
 
@@ -19,6 +21,8 @@ export default function App() {
         <Stack.Screen name="FarmerDetail" component={FarmerDetail} options={{ headerShown: false }} />
         <Stack.Screen name="ForgetPassword" component={ForgetPassword} options={{ headerShown: false }} />
         <Stack.Screen name="RegsiterFarmer" component={RegsiterFarmer} options={{ headerShown: false }} />
+        <Stack.Screen name="SearchFarmer" component={SearchFaarmers} options={{ headerShown: false }} />
+        <Stack.Screen name="GenerateFarmerData" component={GenerateFarmerData} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
