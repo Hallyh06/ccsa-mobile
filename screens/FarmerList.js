@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, Picker, FlatList, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "../firebaseConfig";
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const FarmersList = ({ navigation }) => {
   const [farmers, setFarmers] = useState([]);
@@ -38,6 +39,9 @@ const FarmersList = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="arrow-back" size={24} color="#000" />
+        </TouchableOpacity>
         <Image source={require("../assets/cosmologo.png")} style={styles.logo} />
         <View>
           <Text style={styles.title}>Centre for Climate Smart Agriculture</Text>
@@ -86,6 +90,10 @@ const styles = StyleSheet.create({
   logo: { width: 50, height: 50, marginRight: 10 },
   title: { fontSize: 14, fontWeight: "bold", color: "#333" },
   subtitle: { fontSize: 14, color: "#666" },
+  backButton: {
+    marginRight: 5,
+    padding: 5,
+  },
   searchInput: {
     backgroundColor: "#fff",
     padding: 10,

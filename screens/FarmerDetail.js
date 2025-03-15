@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Image, ScrollView } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../firebaseConfig';
+import { useNavigation } from "@react-navigation/native";
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const FarmerDetail = () => {
@@ -10,6 +11,7 @@ const FarmerDetail = () => {
   const { id } = route.params;
   const [farmer, setFarmer] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchFarmer = async () => {
@@ -38,6 +40,9 @@ const FarmerDetail = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Icon name="arrow-back" size={24} color="#000" />
+        </TouchableOpacity>
         <Image source={require("../assets/cosmologo.png")} style={styles.logo} />
         <View>
           <Text style={styles.title}>Centre for Climate Smart Agriculture</Text>
@@ -100,6 +105,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
     marginTop: 20,
+  },
+  backButton: {
+    marginRight: 5,
+    padding: 5,
   },
   logo: {
     width: 50,

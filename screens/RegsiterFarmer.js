@@ -93,6 +93,9 @@ const RegisterFarmer = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <Icon name="arrow-back" size={24} color="#000" />
+      </TouchableOpacity>
         <Image source={require("../assets/cosmologo.png")} style={styles.logo} />
         <View>
           <Text style={styles.title}>Centre for Climate Smart Agriculture</Text>
@@ -309,6 +312,10 @@ const styles = {
     alignItems: 'center',
     marginBottom: 20,
     marginTop: 20,
+  },
+  backButton: {
+    marginRight: 5,
+    padding: 5,
   },
   logo: {
     width: 50,

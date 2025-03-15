@@ -126,7 +126,7 @@ const Dashboard = () => {
           data={Object.keys(farmersByCrop).map((key, index) => ({
             name: `${key} (${farmersByCrop[key]})`,
             population: farmersByCrop[key],
-            color: ["#FFA500", "#008000", "#800080"][index % 3],
+            color: ["#FFA500", "#008000", "#800080", "#D7D7D7", "#A3C1AD", "#008E97"][index % 6],
             legendFontColor: "#7F7F7F",
             legendFontSize: 12,
           }))}
@@ -146,7 +146,7 @@ const Dashboard = () => {
           data={Object.keys(farmersByGender).map((key, index) => ({
             name: `${key} (${farmersByGender[key]})`,
             population: farmersByGender[key],
-            color: ["#FFA500", "#008000", "#800080"][index % 3],
+            color: ["#A3C1AD", "#008E97", "#800080"][index % 3],
             legendFontColor: "#7F7F7F",
             legendFontSize: 12,
           }))}
@@ -165,7 +165,7 @@ const Dashboard = () => {
           data={Object.keys(farmersByfarmOwnership).map((key, index) => ({
             name: `${key} (${farmersByfarmOwnership[key]})`,
             population: farmersByfarmOwnership[key],
-            color: ["#FFA500", "#008000", "#800080"][index % 3],
+            color: ["#005f69", "#AFDBF5", "#800080"][index % 3],
             legendFontColor: "#7F7F7F",
             legendFontSize: 12,
           }))}
@@ -185,7 +185,7 @@ const Dashboard = () => {
           data={Object.keys(farmersByFarmingSeason).map((key, index) => ({
             name: `${key} (${farmersByFarmingSeason[key]})`,
             population: farmersByFarmingSeason[key],
-            color: ["#FFA500", "#008000", "#800080"][index % 3],
+            color: ["#007791", "#008000", "#800080"][index % 3],
             legendFontColor: "#7F7F7F",
             legendFontSize: 12,
           }))}
@@ -210,7 +210,7 @@ const styles = {
   menuContainer: {
     position: "absolute", left: -250, top: 60, width: 250,
     backgroundColor: "#002244", paddingVertical: 20,
-    borderRadius: 10, elevation: 10, shadowColor: "#000", marginTop: 25
+    borderRadius: 10, elevation: 10, shadowColor: "#000", marginTop: 0
   },
   menuItem: { flexDirection: "row", alignItems: "center", padding: 15 },
   menuText: { color: "white", fontSize: 16, marginLeft: 10 },

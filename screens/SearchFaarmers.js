@@ -3,6 +3,7 @@ import { View, Text, TextInput, FlatList, TouchableOpacity, Image, StyleSheet } 
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "../firebaseConfig";
 import { Picker } from '@react-native-picker/picker';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 
 const SearchFaarmers = ({ navigation }) => {
@@ -50,10 +51,13 @@ const SearchFaarmers = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <Icon name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
         <Image source={require("../assets/cosmologo.png")} style={styles.logo} />
         <View>
           <Text style={styles.title}>Centre for Climate Smart Agriculture</Text>
-          <Text style={styles.subtitle}>Registered Farmers</Text>
+          <Text style={styles.subtitle}>Search Registered Farmers</Text>
         </View>
       </View>
 
@@ -196,6 +200,10 @@ const styles = StyleSheet.create({
     logo: { width: 50, height: 50, marginRight: 10 },
     title: { fontSize: 14, fontWeight: "bold", color: "#333" },
     subtitle: { fontSize: 14, color: "#666" },
+    backButton: {
+      marginRight: 5,
+      padding: 5,
+    },
     searchInput: {
       backgroundColor: "#fff",
       padding: 10,
