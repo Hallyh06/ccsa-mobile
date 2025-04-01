@@ -6,29 +6,40 @@ import { useNavigation } from "@react-navigation/native";
 import { firestore } from "../firebaseConfig";
 import * as Location from "expo-location";
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { CheckBox } from "react-native-elements"; // Import CheckBox
 
+const cropOptions = ["Beans", "Cabbage", "Carrot", "Cassava", "Corn", "Onions", "Rice", "Tomato", "Wheat"]; // Crop List
 
 const RegisterFarmer = () => {
   const navigation = useNavigation();
   const [formData, setFormData] = useState({
-    name: "",
+    firstname: "",
+    middlename: "",
+    lastname: "",
     email: "",
     phone: "",
+    whatsappNumber: "",
     address: "",
     nin: "",
     bvn: "",
     state: "",
     localGovernment: "",
+    ward: "",
+    pollingUnit: "",
     age: "",
+    maritalStatus: "",
+    highestQualification: "",
+    employmenyStatus: "",
     gender: "",
     primaryCrop: "",
-    secondaryCrop: "",
+    secondaryCrop: [], // an array
     farmSize: "",
     farmingSeason: "",
     farmOwnership: "",
     latitude: "",
     longitude: "",
   });
+  const [showWhatsAppInput, setShowWhatsAppInput] = useState(false); // Controls WhatsApp input visibility
 
   const generateFarmerID = () => {
     const date = new Date();
@@ -37,7 +48,41 @@ const RegisterFarmer = () => {
 
   const handleChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
+
+     // Check if phone number is exactly 11 digits
+     if (name === "phone" && value.length === 11) {
+      Alert.alert(
+        "WhatsApp Number",
+        "Is this your WhatsApp number?",
+        [
+          {
+            text: "Yes",
+            onPress: () => setFormData({ ...formData, whatsappNumber: value }),
+          },
+          {
+            text: "No",
+            onPress: () => setShowWhatsAppInput(true),
+          },
+        ],
+        { cancelable: false }
+      );
+    }
+
+
   };
+
+
+  const handleCheckboxChange = (crop) => {
+    setFormData((prevState) => {
+      const { secondaryCrop } = prevState;
+      if (secondaryCrop.includes(crop)) {
+        return { ...prevState, secondaryCrop: secondaryCrop.filter((item) => item !== crop) };
+      } else {
+        return { ...prevState, secondaryCrop: [...secondaryCrop, crop] };
+      }
+    });
+  };
+
 
   const handleSubmit = async () => {
     try {
@@ -49,18 +94,26 @@ const RegisterFarmer = () => {
       Alert.alert("Success", "Farmer Registered Successfully!");
       navigation.navigate("Dashboard");
       setFormData({
-        name: "",
+        firstname: "",
+        middlename: "",
+        lastname: "",
         email: "",
         phone: "",
+        whatsappNumber: "",
         address: "",
         nin: "",
         bvn: "",
         state: "",
         localGovernment: "",
+        ward: "",
+        pollingUnit: "",
         age: "",
+        maritalStatus: "",
+        highestQualification: "",
+        employmenyStatus: "",
         gender: "",
         primaryCrop: "",
-        secondaryCrop: "",
+        secondaryCrop: [],
         farmSize: "",
         farmingSeason: "",
         farmOwnership: "",
@@ -93,9 +146,9 @@ const RegisterFarmer = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        <Icon name="arrow-back" size={24} color="#000" />
-      </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="arrow-back" size={24} color="#000" />
+        </TouchableOpacity>
         <Image source={require("../assets/cosmologo.png")} style={styles.logo} />
         <View>
           <Text style={styles.title}>Centre for Climate Smart Agriculture</Text>
@@ -110,11 +163,24 @@ const RegisterFarmer = () => {
       </View>
 
       <View style={styles.formGroup}>
-        <TextInput style={styles.input} placeholder="Full Name" value={formData.name} onChangeText={(text) => handleChange("name", text)} />
+        <TextInput style={styles.input} placeholder="First Name" value={formData.firstname} onChangeText={(text) => handleChange("firstname", text)} />
+        <TextInput style={styles.input} placeholder="Middle Name" value={formData.middlename} onChangeText={(text) => handleChange("middlename", text)} />
+        <TextInput style={styles.input} placeholder="Last Name" value={formData.lastname} onChangeText={(text) => handleChange("lastname", text)} />
         <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" value={formData.email} onChangeText={(text) => handleChange("email", text)} />
-        <TextInput style={styles.input} placeholder="Phone Number" keyboardType="phone-pad" value={formData.phone} onChangeText={(text) => handleChange("phone", text)} />
-        <TextInput style={styles.input} placeholder="NIN" value={formData.nin} onChangeText={(text) => handleChange("nin", text)} />
-        <TextInput style={styles.input} placeholder="BVN" value={formData.bvn} onChangeText={(text) => handleChange("bvn", text)} />
+        <TextInput style={styles.input} placeholder="Phone Number" keyboardType="phone-pad" maxLength={11} value={formData.phone} onChangeText={(text) => handleChange("phone", text)} />
+          {/* Show WhatsApp number input if user selects 'No' */}
+        {showWhatsAppInput && (
+          <TextInput
+            style={styles.input}
+            placeholder="WhatsApp Number"
+            keyboardType="phone-pad"
+            maxLength={11}
+            value={formData.whatsappNumber}
+            onChangeText={(text) => handleChange("whatsappNumber", text)}
+          />
+        )}
+        <TextInput style={styles.input} placeholder="NIN" keyboardType="phone-pad" value={formData.nin} onChangeText={(text) => handleChange("nin", text)} />
+        <TextInput style={styles.input} placeholder="BVN" keyboardType="phone-pad" value={formData.bvn} onChangeText={(text) => handleChange("bvn", text)} />
         <Picker selectedValue={formData.state} style={styles.picker} onValueChange={(value) => handleChange("state", value)}>
           <Picker.Item label="Select State" value="" />
           <Picker.Item label="Abia" value="Abia" />
@@ -164,10 +230,39 @@ const RegisterFarmer = () => {
           <Picker.Item label="60 - 70" value="60 - 70" />
           <Picker.Item label="70 - 80" value="70 - 80" />
         </Picker>
+        <Picker selectedValue={formData.maritalStatus} style={styles.picker} onValueChange={(value) => handleChange("maritalStatus", value)}>
+          <Picker.Item label="Marital Status" value="" />
+          <Picker.Item label="Single" value="Single" />
+          <Picker.Item label="Married" value="Married" />
+          <Picker.Item label="Devorced" value="Devorced" />
+          <Picker.Item label="Widow" value="Widow" />
+          <Picker.Item label="Widower" value="Widower" />
+          <Picker.Item label="Seperated" value="Seperated" />
+          <Picker.Item label="Engaged" value="Engaged" />
+        </Picker>
         <Picker selectedValue={formData.gender} style={styles.picker} onValueChange={(value) => handleChange("gender", value)}>
           <Picker.Item label="Select Gender" value="" />
           <Picker.Item label="Male" value="Male" />
           <Picker.Item label="Female" value="Female" />
+        </Picker>
+        <Picker selectedValue={formData.highestQualification} style={styles.picker} onValueChange={(value) => handleChange("highestQualification", value)}>
+          <Picker.Item label="Select Highest Qualification" value="" />
+          <Picker.Item label="Ph.D" value="Ph.D" />
+          <Picker.Item label="M.Sc" value="M.Sc" />
+          <Picker.Item label="B.Sc" value="B.Sc" />
+          <Picker.Item label="HND" value="HND" />
+          <Picker.Item label="ND" value="ND" />
+          <Picker.Item label="OND" value="OND" />
+          <Picker.Item label="WASSCE" value="WASSCE" />
+          <Picker.Item label="Primary School Certificate" value="Primary School Certificate" />
+        </Picker>
+        <Picker selectedValue={formData.employmenyStatus} style={styles.picker} onValueChange={(value) => handleChange("employmenyStatus", value)}>
+          <Picker.Item label="Select Employment Status" value="" />
+          <Picker.Item label="Employed" value="Employed" />
+          <Picker.Item label="Unemployed" value="Unemployed" />
+          <Picker.Item label="Self-Employed" value="Self-Employed" />
+          <Picker.Item label="Retired" value="Retired" />
+          <Picker.Item label="Resigned" value="Resigned" />
         </Picker>
       </View>
 
@@ -223,10 +318,15 @@ const RegisterFarmer = () => {
           <Picker.Item label="Jigawa" value="Jigawa" />
           <Picker.Item label="Katsina" value="Katsina" />
         </Picker>
+
+        <TextInput style={styles.input} placeholder="Ward" value={formData.ward} onChangeText={(text) => handleChange("ward", text)} />
+        <TextInput style={styles.input} placeholder="Polling Unit" value={formData.pollingUnit} onChangeText={(text) => handleChange("pollingUnit", text)} />
+
         <Picker selectedValue={formData.farmingSeason} style={styles.picker} onValueChange={(value) => handleChange("farmingSeason", value)}>
           <Picker.Item label="Farming Season" value="" />
           <Picker.Item label="Dry Season" value="Dry Season" />
           <Picker.Item label="Rainy Season" value="Rainy Season" />
+          <Picker.Item label="Both Seasons" value="Both Seasons" />
         </Picker>
         <Picker selectedValue={formData.primaryCrop} style={styles.picker} onValueChange={(value) => handleChange("primaryCrop", value)}>
           <Picker.Item label="Primary Crop" value="" />
@@ -245,26 +345,20 @@ const RegisterFarmer = () => {
             <Picker.Item label="Wheat" value="Wheat" />
             <Picker.Item label="Yam" value="Yam" />
         </Picker>
-        <Picker selectedValue={formData.secondaryCrop} style={styles.picker} onValueChange={(value) => handleChange("secondaryCrop", value)}>
-          <Picker.Item label="Secondary Crop" value="" />
-            <Picker.Item label="Beans" value="Beans" />
-            <Picker.Item label="Cabbage" value="Cabbage" />
-            <Picker.Item label="Carrot" value="Carrot" />
-            <Picker.Item label="Cucumber" value="Cucumber" />
-            <Picker.Item label="Garlic" value="Garlic" />
-            <Picker.Item label="Groundnut" value="Groundnut" />
-            <Picker.Item label="Maize" value="Maize" />
-            <Picker.Item label="Onion" value="Onion" />
-            <Picker.Item label="Potato" value="Potato" />
-            <Picker.Item label="Rice" value="Rice" />
-            <Picker.Item label="Sugarcane" value="Sugarcane" />
-            <Picker.Item label="Tomato" value="Tomato" />
-            <Picker.Item label="Wheat" value="Wheat" />
-            <Picker.Item label="Yam" value="Yam" />
-        </Picker>
+        {/* Secondary Crops as Checkboxes */}
+        <Text style={styles.label}>Select Secondary Crops:</Text>
+        {cropOptions.map((crop) => (
+          <CheckBox
+            key={crop}
+            title={crop}
+            checked={formData.secondaryCrop.includes(crop)}
+            onPress={() => handleCheckboxChange(crop)}
+          />
+        ))}
         <Picker selectedValue={formData.farmOwnership} style={styles.picker} onValueChange={(value) => handleChange("farmOwnership", value)}>
           <Picker.Item label="Farm Ownership" value="" />
           <Picker.Item label="Self Owned" value="Self Owned" />
+          <Picker.Item label="Inherited" value="Inherited" />
           <Picker.Item label="Rent" value="Rent" />
         </Picker>
       </View>

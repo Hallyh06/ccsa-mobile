@@ -54,24 +54,32 @@ const FarmerDetail = () => {
           <View style={styles.detailSection}>
             <Text style={styles.sectionTitle}><Icon name="user" size={18} color="#ffffff" /> Personal Information</Text>
             <Text style={styles.detail}><Text style={styles.label}>Reg ID:</Text> {farmer.farmerID}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Name:</Text> {farmer.name}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Last Name:</Text> {farmer.lastname}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>First Name:</Text> {farmer.firstname}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Middle Name:</Text> {farmer.middlename}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Phone:</Text> {farmer.phone}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>WhatsApp Number:</Text> {farmer.whatsappNumber}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Email:</Text> {farmer.email}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Gender:</Text> {farmer.gender}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Age:</Text> {farmer.age}</Text>
             <Text style={styles.detail}><Text style={styles.label}>NIN:</Text> {farmer.nin}</Text>
             <Text style={styles.detail}><Text style={styles.label}>BVN:</Text> {farmer.bvn}</Text>
             <Text style={styles.detail}><Text style={styles.label}>State of Residence:</Text> {farmer.state}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Highest Qualification:</Text> {farmer.highestQualification}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Marital State:</Text> {farmer.maritalStatus}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Employment Status:</Text> {farmer.employmenyStatus}</Text>
           </View>
 
           <View style={styles.detailSection}>
             <Text style={styles.sectionTitle}><Icon name="leaf" size={18} color="#ffffff" /> Farm Information</Text>
             <Text style={styles.detail}><Text style={styles.label}>Farm Size:</Text> {farmer.farmSize} acres</Text>
             <Text style={styles.detail}><Text style={styles.label}>Primary Crops:</Text> {farmer.primaryCrop}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Secondary Crops:</Text> {farmer.secondaryCrop}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Secondary Crops:</Text> {farmer.secondaryCrop?.length > 0 ? farmer.secondaryCrop.join(", ") : "N/A"}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Farm Ownership:</Text> {farmer.farmOwnership}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Farm Location:</Text> {farmer.state}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Local Government:</Text> {farmer.localGovernment}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Ward:</Text> {farmer.ward}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Polling Unit:</Text> {farmer.pollingUnit}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Farming Season:</Text> {farmer.farmingSeason}</Text>
           </View>
 

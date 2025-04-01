@@ -23,7 +23,7 @@ const FarmersList = ({ navigation }) => {
 
   const filteredFarmers = farmers.filter((farmer) => {
     return (
-      (farmer.name.toLowerCase().includes(search.toLowerCase()) ||
+      ((farmer.name?.toLowerCase() || "").includes(search.toLowerCase()) ||
         farmer.nin.includes(search) ||
         farmer.phone.includes(search)) &&
       (filter.cropType ? farmer.primaryCrop === filter.cropType : true) &&
@@ -64,7 +64,7 @@ const FarmersList = ({ navigation }) => {
             style={styles.card}
             onPress={() => navigation.navigate("FarmerDetail", { id: item.id })}
           >
-            <Text style={styles.cardText}>{indexOfFirstFarmer + index + 1}. {item.name}</Text>
+            <Text style={styles.cardText}>{indexOfFirstFarmer + index + 1}. {item.lastname}, {item.firstname} {item.middlename}</Text>
             <Text style={styles.cardText}>📞 {item.phone} | NIN: {item.nin}</Text>
             <Text style={styles.cardText}>🌾 {item.primaryCrop} | 📍 {item.state} | ⚥ {item.gender}</Text>
           </TouchableOpacity>
