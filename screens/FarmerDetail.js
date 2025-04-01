@@ -89,6 +89,15 @@ const FarmerDetail = () => {
             <Text style={styles.detail}><Text style={styles.label}>Coordinate system:</Text> {farmer.coordinateSystem}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Coordinate Format:</Text> {farmer.coordinateFormat}</Text>
           </View>
+
+          <View style={styles.detailSection}>
+            <Text style={styles.sectionTitle}><Icon name="money" size={18} color="#ffffff" /> Banking Information</Text>
+            <Text style={styles.detail}><Text style={styles.label}>BVN:</Text> {farmer.bvn}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Bank Name:</Text> {farmer.bankname}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Account Name:</Text> {farmer.accountname}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Account Number:</Text> {farmer.accountnumber}</Text>
+          </View>
+
         </View>
       ) : (
         <Text style={styles.noData}>No farmer data available.</Text>

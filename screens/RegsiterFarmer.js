@@ -22,6 +22,9 @@ const RegisterFarmer = () => {
     address: "",
     nin: "",
     bvn: "",
+    bankname: "",
+    accountname: "",
+    accountnumber: "",
     state: "",
     localGovernment: "",
     ward: "",
@@ -103,6 +106,9 @@ const RegisterFarmer = () => {
         address: "",
         nin: "",
         bvn: "",
+        bankname: "",
+        accountname: "",
+        accountnumber: "",
         state: "",
         localGovernment: "",
         ward: "",
@@ -168,7 +174,7 @@ const RegisterFarmer = () => {
         <TextInput style={styles.input} placeholder="Last Name" value={formData.lastname} onChangeText={(text) => handleChange("lastname", text)} />
         <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" value={formData.email} onChangeText={(text) => handleChange("email", text)} />
         <TextInput style={styles.input} placeholder="Phone Number" keyboardType="phone-pad" maxLength={11} value={formData.phone} onChangeText={(text) => handleChange("phone", text)} />
-          {/* Show WhatsApp number input if user selects 'No' */}
+        {/* Show WhatsApp number input if user selects 'No' */}
         {showWhatsAppInput && (
           <TextInput
             style={styles.input}
@@ -179,10 +185,9 @@ const RegisterFarmer = () => {
             onChangeText={(text) => handleChange("whatsappNumber", text)}
           />
         )}
-        <TextInput style={styles.input} placeholder="NIN" keyboardType="phone-pad" value={formData.nin} onChangeText={(text) => handleChange("nin", text)} />
-        <TextInput style={styles.input} placeholder="BVN" keyboardType="phone-pad" value={formData.bvn} onChangeText={(text) => handleChange("bvn", text)} />
+        <TextInput style={styles.input} placeholder="NIN" keyboardType="phone-pad" value={formData.nin} maxLength={11}  onChangeText={(text) => handleChange("nin", text)} />
         <Picker selectedValue={formData.state} style={styles.picker} onValueChange={(value) => handleChange("state", value)}>
-          <Picker.Item label="Select State" value="" />
+          <Picker.Item label="Select State of Residence" value="" />
           <Picker.Item label="Abia" value="Abia" />
           <Picker.Item label="Adamawa" value="Adamawa" />
           <Picker.Item label="Akwa Ibom" value="Akwa Ibom" />
@@ -388,6 +393,21 @@ const RegisterFarmer = () => {
         <Text style={styles.buttonText}>Get Farm Coordinates</Text>
       </TouchableOpacity>
 
+         {/* Banking Details Information */}
+      <View style={styles.sectionHeader}>
+        <Icon name="money" size={24} color="#4CAF50" />
+        <Text style={styles.sectionTitle}>Banking Details</Text>
+      </View>
+
+      <View style={styles.formGroup}>
+        <TextInput style={styles.input} placeholder="BVN" keyboardType="phone-pad" value={formData.bvn} maxLength={11} onChangeText={(text) => handleChange("bvn", text)} />
+        <TextInput style={styles.input} placeholder="Bank Name" value={formData.bankname} onChangeText={(text) => handleChange("bankname", text)} />
+        <TextInput style={styles.input} placeholder="Account Name" value={formData.accountname} onChangeText={(text) => handleChange("accountname", text)} />
+        <TextInput style={styles.input} placeholder="Account Number" value={formData.accountnumber} keyboardType="phone-pad" maxLength={10} onChangeText={(text) => handleChange("accountnumber", text)} />
+     </View>
+
+
+
       {/* Submit Button */}
       <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
         <Text style={styles.submitButtonText}>Register Farmer</Text>
@@ -459,7 +479,8 @@ const styles = {
     backgroundColor: "#1E90FF",
     padding: 12,
     borderRadius: 5,
-    marginTop: 10,
+    marginTop: 5,
+    marginBottom: 20
   },
   buttonText: {
     color: "white",
