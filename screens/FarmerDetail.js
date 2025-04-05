@@ -83,6 +83,40 @@ const FarmerDetail = () => {
             <Text style={styles.detail}><Text style={styles.label}>Farming Season:</Text> {farmer.farmingSeason}</Text>
           </View>
 
+          {/* Displaying Soil Information */}
+           
+          <View style={styles.detailSection}>
+                <Text style={styles.sectionTitle}><Icon name="flask" size={18} color="#ffffff" /> Soil Information</Text>
+                <Text style={styles.detail}><Text style={styles.label}>Soil Type:</Text> {farmer.soilType}</Text>
+                <Text style={styles.detail}><Text style={styles.label}>Soild pH Level:</Text> {farmer.pHLevel}</Text>
+                <Text style={styles.detail}><Text style={styles.label}>Soil Fertility:</Text> {farmer.fertility}</Text>
+                {/* Add more soil info fields as necessary */}
+          </View>
+
+
+         {/* Displaying Farm Yield Information */}
+          <View style={styles.detailSection}>
+          {farmer.estimatedYields && Array.isArray(farmer.estimatedYields) && farmer.estimatedYields.length > 0 ? (
+              <View>
+                <Text style={styles.sectionTitle}><Icon name="bar-chart" size={18} color="#ffffff" /> Farm Yield</Text>
+                {farmer.estimatedYields.map((yieldData, index) => (
+                  <View key={index} style={styles.detail}>
+                    <View style={{borderBottomWidth: 1}}>
+                      <Text style={styles.detail}><Text style={styles.label}>Year:</Text> {yieldData.year}</Text>
+                      <Text style={styles.detail}><Text style={styles.label}>Season:</Text> {yieldData.season}</Text>
+                      <Text style={styles.detail}><Text style={styles.label}>Crop:</Text> {yieldData.crop}</Text>
+                      <Text style={styles.detail}><Text style={styles.label}>Quantity:</Text> {yieldData.quantity}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.noData}>No farm yield data available.</Text>
+            )}
+          </View>
+
+
+
           <View style={styles.detailSection}>
             <Text style={styles.sectionTitle}><Icon name="map-marker" size={18} color="#ffffff" /> Geospatial Information</Text>
             <Text style={styles.detail}><Text style={styles.label}>Coordinates:</Text> {farmer.latitude}, {farmer.longitude}</Text>
