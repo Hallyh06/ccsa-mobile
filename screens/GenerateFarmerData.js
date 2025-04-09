@@ -64,7 +64,8 @@ const GenerateFarmerData = () => {
         placeholder="Enter Phone Number or NIN"
         value={searchTerm}
         onChangeText={setSearchTerm}
-        keyboardType="numeric"
+        keyboardType="phone-pad"
+        maxLength={11}
       />
 
       {/* Fetch Button */}
@@ -77,7 +78,7 @@ const GenerateFarmerData = () => {
       {farmerData && (
         <View style={styles.farmerCard}>
           <Text style={styles.sectionTitle}>Farmer Details</Text>
-          <Text style={styles.detail}><Text style={styles.label}>Name:</Text> {farmerData.name}</Text>
+          <Text style={styles.detail}><Text style={styles.label}>Name:</Text> {farmerData.lastname}, {farmerData.firstname} {farmerData.middlename}</Text>
           <Text style={styles.detail}><Text style={styles.label}>Phone:</Text> {farmerData.phone}</Text>
           <Text style={styles.detail}><Text style={styles.label}>NIN:</Text> {farmerData.nin}</Text>
           <Text style={styles.detail}><Text style={styles.label}>State:</Text> {farmerData.state}</Text>

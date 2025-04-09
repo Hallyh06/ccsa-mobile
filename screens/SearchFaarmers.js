@@ -32,9 +32,11 @@ const SearchFaarmers = ({ navigation }) => {
 
   const filteredFarmers = farmers.filter((farmer) => {
     return (
-      (farmer.name.toLowerCase().includes(search.toLowerCase()) ||
-        farmer.nin.includes(search) ||
-        farmer.phone.includes(search)) &&
+      (farmer.firstname ?.toLowerCase().includes(search.toLowerCase()) ||
+        farmer.middlename ?.toLowerCase().includes(search.toLowerCase()) || 
+        farmer.lastname ?.toLowerCase().includes(search.toLowerCase()) ||
+        farmer.nin ?.includes(search) || 
+        farmer.phone ?.includes(search)) &&
       (filter.state ? farmer.state === filter.state : true) &&
       (filter.gender ? farmer.gender === filter.gender : true) &&
       (filter.primaryCrop ? farmer.primaryCrop === filter.primaryCrop : true) &&
@@ -161,6 +163,7 @@ const SearchFaarmers = ({ navigation }) => {
         <Picker.Item label="Select Farming Season" value="" />
         <Picker.Item label="Rainy Season" value="Rainy Season" />
         <Picker.Item label="Dry Season" value="Dry Season" />
+        <Picker.Item label="Both Seasons" value="Both Seasons" />
       </Picker>
       </View>
 
@@ -172,6 +175,7 @@ const SearchFaarmers = ({ navigation }) => {
       >
         <Picker.Item label="Select Farm Ownership" value="" />
         <Picker.Item label="Self Owned" value="Self Owned" />
+        <Picker.Item label="Inherited" value="Inherited" />
         <Picker.Item label="Rent" value="Rent" />
       </Picker>
       </View>
@@ -184,7 +188,7 @@ const SearchFaarmers = ({ navigation }) => {
             style={styles.card}
             onPress={() => navigation.navigate("FarmerDetail", { id: item.id })}
           >
-            <Text style={styles.cardText}>{indexOfFirstFarmer + index + 1}. {item.name}</Text>
+            <Text style={styles.cardText}>{indexOfFirstFarmer + index + 1}. {item.lastname}, {item.firstname} {item.middlename}</Text>
             <Text style={styles.cardText}>📞 {item.phone} | NIN: {item.nin}</Text>
             <Text style={styles.cardText}>🌾 {item.primaryCrop} | 📍 {item.state} | ⚥ {item.gender}</Text>
           </TouchableOpacity>
