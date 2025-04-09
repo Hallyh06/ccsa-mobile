@@ -74,14 +74,14 @@ const GenerateReport = ({ farmerData }) => {
             </div>
             <p><strong>Farm Size:</strong> ${farmerData.farmSize}</p>
             
-            <div class="subheader">Farm Information</div>
+            <div class="subheader">Banking Information</div>
             <div class="row">
-              <p><strong>Bank Name:</strong> ${farmerData.bankName}</p>
-              <p><strong>Account Name:</strong> ${farmerData.accountName}</p>
+              <p><strong>Bank Name:</strong> ${farmerData.bankname}</p>
+              <p><strong>Account Name:</strong> ${farmerData.accountname}</p>
             </div>
 
             <div class="row">
-              <p><strong>Account Number:</strong> ${farmerData.accountNumber}</p>
+              <p><strong>Account Number:</strong> ${farmerData.accountnumber}</p>
               <p><strong>BVN:</strong> ${farmerData.bvn}</p>
             </div>
 
