@@ -205,24 +205,66 @@ const Dashboard = () => {
 };
 
 const styles = {
-  container: { flex: 1, backgroundColor: "#F4F4F4" },
-  header: { backgroundColor: "#002244", },
+  container: { 
+    flex: 1, 
+    backgroundColor: "#F4F4F4" 
+  },
+  header: { 
+    backgroundColor: "#002244"
+  },
   menuContainer: {
-    position: "absolute", left: -250, top: 60, width: 250,
-    backgroundColor: "#002244", paddingVertical: 20,
-    borderRadius: 10, elevation: 10, shadowColor: "#000", marginTop: 0
+    position: "absolute", 
+    left: -250, 
+    top: 60, 
+    width: 250,
+    backgroundColor: "#002244", 
+    paddingVertical: 20,
+    borderRadius: 10, 
+    elevation: 10, 
+    shadowColor: "#000", 
+    marginTop: 0
   },
-  menuItem: { flexDirection: "row", alignItems: "center", padding: 15 },
-  menuText: { color: "white", fontSize: 16, marginLeft: 10 },
-  content: { padding: 20 },
+  menuItem: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    padding: 15 },
+  menuText: { 
+    color: "white", 
+    fontSize: 16, 
+    marginLeft: 10 
+  },
+  content: { 
+    padding: 20 
+  },
   card: {
-    backgroundColor: "white", padding: 20, borderRadius: 10,
-    alignItems: "center", marginBottom: 20, elevation: 5,
+    backgroundColor: "white", 
+    padding: 20, borderRadius: 10,
+    alignItems: "center", 
+    marginBottom: 20, 
+    elevation: 5,
   },
-  title: { fontSize: 18, fontWeight: "bold", color: "#333" },
-  chartTitle: { fontSize: 12, fontWeight: "lighter", color: "#333", textAlign: "center" },
-  number: { fontSize: 24, fontWeight: "bold", color: "#007AFF", marginTop: 10, textAlign: "center" },
-  chart: { borderRadius: 10, marginVertical: 10 },
+  title: { 
+    fontSize: 18, 
+    fontWeight: "bold", 
+    color: "#333" 
+  },
+  chartTitle: { 
+    fontSize: 12, 
+    fontWeight: "lighter", 
+    color: "#333", 
+    textAlign: "center" 
+  },
+  number: { 
+    fontSize: 24, 
+    fontWeight: "bold", 
+    color: "#007AFF", 
+    marginTop: 10, 
+    textAlign: "center" 
+  },
+  chart: { 
+    borderRadius: 10, 
+    marginVertical: 10 
+  },
   chartConfig: {
     backgroundGradientFrom: "#FFF",
     backgroundGradientTo: "#FFF",
