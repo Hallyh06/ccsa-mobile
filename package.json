@@ -22,9 +22,11 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.1",
+    "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-picker/picker": "^2.9.0",
     "@react-navigation/native": "^7.0.15",
     "@react-navigation/stack": "^7.1.2",
+    "axios": "^1.9.0",
     "expo": "^52.0.38",
     "expo-dev-client": "^5.0.13",
     "expo-location": "^18.0.7",

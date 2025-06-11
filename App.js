@@ -9,6 +9,7 @@ import ForgetPassword from "./screens/ForgotPassword";
 import SearchFaarmers from "./screens/SearchFaarmers";
 import GenerateFarmerData from "./screens/GenerateFarmerData";
 import FarmAreaCalculator from "./screens/FarmAreaCalculator";
+import UpdateFarmerForm from "./screens/UpdateFarmerForm";
 
 const Stack = createStackNavigator();
 
@@ -25,6 +26,7 @@ export default function App() {
         <Stack.Screen name="SearchFarmer" component={SearchFaarmers} options={{ headerShown: false }} />
         <Stack.Screen name="GenerateFarmerData" component={GenerateFarmerData} options={{ headerShown: false }} />
         <Stack.Screen name="FarmAreaCalculator" component={FarmAreaCalculator} options={{ headerShown: false }} />
+        <Stack.Screen name="UpdateFarmerForm" component={UpdateFarmerForm} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

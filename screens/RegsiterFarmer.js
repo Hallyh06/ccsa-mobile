@@ -1,254 +1,69 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Image, } from "react-native";
+import React, { useEffect, useState } from 'react';
+import { View, ScrollView, Alert, Modal, Image,  TouchableOpacity } from 'react-native';
+import { Text, RadioButton, TextInput, Button, Card } from 'react-native-paper';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from "@react-native-picker/picker";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
-import { firestore } from "../firebaseConfig";
 import * as Location from "expo-location";
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import { CheckBox } from "react-native-elements"; // Import CheckBox
-import { Dropdown } from 'react-native-element-dropdown';
-import statesAndLgas from '../statesAndLgas';
+import axios from 'axios'; // For making HTTP requests
+import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { firestore } from '../firebaseConfig';  // your Firestore configuration
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import nigeriaData from './data/nigeriaData.json';
+
+const API_ENDPOINT = 'https://api.example.com/verify-nin'; // Replace with your provider's URL
+const API_KEY = 'YOUR_API_KEY_HERE'; // Replace with your provider's API key
 
 
-const cropOptions = ["Beans", "Cabbage", "Carrot", "Cassava", "Corn", "Onions", "Rice", "Tomato", "Wheat"]; // Crop List
 
-const searchCropOptions = [
-  { label: "Maize", value: "Maize" },
-  { label: "Rice", value: "Rice" },
-  { label: "Cassava", value: "Cassava" },
-  { label: "Yam", value: "Yam" },
-  { label: "Beans", value: "Beans" },
-];
-
-//Produce Categories
-const produceCategories = {
-  Livestock: ["Cows", "Rams", "Goats"],
-  Poultry: ["Local Chickens", "Broilers", "Layers"],
-  Crops: {
-    Vegetables: ["Carrot", "Tomato", "Onion", "Cabbage"],
-    Fruits: ["Mango", "Banana", "Orange", "Pineapple"],
-    Tubers: ["Cassava", "Yam", "Irish Potato", "Sweet Potato", "Cocoa Yam"],
-    Grains: ["Rice", "Millet", "Wheat"]
-  }
-};
-
-
-//...States and LGAs Data
-const nigeriaStatesLGA = [
-  {
-    state: "Abia",
-    lgas: ["Aba North", "Aba South", "Arochukwu", "Bende", "Ikwuano", "Isiala Ngwa North", "Isiala Ngwa South", "Isuikwuato", "Obi Ngwa", "Ohafia", "Osisioma", "Ugwunagbo", "Ukwa East", "Ukwa West", "Umuahia North", "Umuahia South", "Umu Nneochi"]
-  },
-  {
-    state: "Adamawa",
-    lgas: ["Demsa", "Fufore", "Ganye", "Girei", "Gombi", "Guyuk", "Hong", "Jada", "Lamurde", "Madagali", "Maiha", "Mayo Belwa", "Michika", "Mubi North", "Mubi South", "Numan", "Shelleng", "Song", "Toungo", "Yola North", "Yola South"]
-  },
-  {
-    state: "Akwa Ibom",
-    lgas: ["Abak", "Eastern Obolo", "Eket", "Esit Eket", "Essien Udim", "Etim Ekpo", "Etinan", "Ibeno", "Ibesikpo Asutan", "Ibiono-Ibom", "Ika", "Ikono", "Ikot Abasi", "Ikot Ekpene", "Ini", "Itu", "Mbo", "Mkpat-Enin", "Nsit-Atai", "Nsit-Ibom", "Nsit-Ubium", "Obot Akara", "Okobo", "Onna", "Oron", "Oruk Anam", "Udung-Uko", "Ukanafun", "Uruan", "Urue-Offong/Oruko", "Uyo"]
-  },
-  {
-    state: "Anambra",
-    lgas: ["Aguata", "Anambra East", "Anambra West", "Anaocha", "Awka North", "Awka South", "Ayamelum", "Dunukofia", "Ekwusigo", "Idemili North", "Idemili South", "Ihiala", "Njikoka", "Nnewi North", "Nnewi South", "Ogbaru", "Onitsha North", "Onitsha South", "Orumba North", "Orumba South", "Oyi"]
-  },
-  {
-    state: "Bauchi",
-    lgas: ["Alkaleri", "Bauchi", "Bogoro", "Damban", "Darazo", "Dass", "Gamawa", "Ganjuwa", "Giade", "Itas/Gadau", "Jama'are", "Katagum", "Kirfi", "Misau", "Ningi", "Shira", "Tafawa Balewa", "Toro", "Warji", "Zaki"]
-  },
-  {
-    state: "Bayelsa",
-    lgas: ["Brass", "Ekeremor", "Kolokuma/Opokuma", "Nembe", "Ogbia", "Sagbama", "Southern Ijaw", "Yenagoa"]
-  },
-  {
-    state: "Benue",
-    lgas: ["Agatu", "Apa", "Ado", "Buruku", "Gboko", "Guma", "Gwer East", "Gwer West", "Katsina-Ala", "Konshisha", "Kwande", "Logo", "Makurdi", "Obi", "Ogbadibo", "Ohimini", "Oju", "Okpokwu", "Otukpo", "Tarka", "Ukum", "Ushongo", "Vandeikya"]
-  },
-  {
-    state: "Borno",
-    lgas: ["Abadam", "Askira/Uba", "Bama", "Bayo", "Biu", "Chibok", "Damboa", "Dikwa", "Gubio", "Guzamala", "Gwoza", "Hawul", "Jere", "Kaga", "Kala/Balge", "Konduga", "Kukawa", "Kwaya Kusar", "Mafa", "Magumeri", "Maiduguri", "Marte", "Mobbar", "Monguno", "Ngala", "Nganzai", "Shani"]
-  },
-  {
-    state: "Cross River",
-    lgas: ["Abi", "Akamkpa", "Akpabuyo", "Bakassi", "Bekwarra", "Biase", "Boki", "Calabar Municipal", "Calabar South", "Etung", "Ikom", "Obanliku", "Obubra", "Obudu", "Odukpani", "Ogoja", "Yakuur", "Yala"]
-  },
-  {
-    state: "Delta",
-    lgas: ["Aniocha North", "Aniocha South", "Bomadi", "Burutu", "Ethiope East", "Ethiope West", "Ika North East", "Ika South", "Isoko North", "Isoko South", "Ndokwa East", "Ndokwa West", "Okpe", "Oshimili North", "Oshimili South", "Patani", "Sapele", "Udu", "Ughelli North", "Ughelli South", "Ukwuani", "Uvwie", "Warri North", "Warri South", "Warri South West"]
-  },
-  {
-    state: "Ebonyi",
-    lgas: ["Abakaliki", "Afikpo North", "Afikpo South", "Ebonyi", "Ezza North", "Ezza South", "Ikwo", "Ishielu", "Ivo", "Izzi", "Ohaozara", "Ohaukwu", "Onicha"]
-  },
-  {
-    state: "Edo",
-    lgas: ["Akoko-Edo", "Egor", "Esan Central", "Esan North-East", "Esan South-East", "Esan West", "Etsako Central", "Etsako East", "Etsako West", "Igueben", "Ikpoba Okha", "Orhionmwon", "Oredo", "Ovia North-East", "Ovia South-West", "Owan East", "Owan West", "Uhunmwonde"]
-  },
-  {
-    state: "Ekiti",
-    lgas: ["Ado Ekiti", "Efon", "Ekiti East", "Ekiti South-West", "Ekiti West", "Emure", "Gbonyin", "Ido Osi", "Ijero", "Ikere", "Ikole", "Ilejemeje", "Irepodun/Ifelodun", "Ise/Orun", "Moba", "Oye"]
-  },
-  {
-    state: "Enugu",
-    lgas: ["Aninri", "Awgu", "Enugu East", "Enugu North", "Enugu South", "Ezeagu", "Igbo Etiti", "Igbo Eze North", "Igbo Eze South", "Isi Uzo", "Nkanu East", "Nkanu West", "Nsukka", "Oji River", "Udenu", "Udi", "Uzo Uwani"]
-  },
-  {
-    state: "Federal Capital Territory",
-    lgas: ["Abaji", "Bwari", "Gwagwalada", "Kuje", "Kwali", "Municipal Area Council"]
-  },
-  {
-    state: "Gombe",
-    lgas: ["Akko", "Balanga", "Billiri", "Dukku", "Funakaye", "Gombe", "Kaltungo", "Kwami", "Nafada", "Shongom", "Yamaltu/Deba"]
-  },
-  {
-    state: "Imo",
-    lgas: ["Aboh Mbaise", "Ahiazu Mbaise", "Ehime Mbano", "Ezinihitte", "Ideato North", "Ideato South", "Ihitte/Uboma", "Ikeduru", "Isiala Mbano", "Isu", "Mbaitoli", "Ngor Okpala", "Njaba", "Nkwerre", "Nwangele", "Obowo", "Oguta", "Ohaji/Egbema", "Okigwe", "Orlu", "Orsu", "Oru East", "Oru West", "Owerri Municipal", "Owerri North", "Owerri West", "Unuimo"]
-  },
-  {
-    state: "Jigawa",
-    lgas: ["Auyo", "Babura", "Biriniwa", "Birnin Kudu", "Buji", "Dutse", "Gagarawa", "Garki", "Gumel", "Guri", "Gwaram", "Gwiwa", "Hadejia", "Jahun", "Kafin Hausa", "Kazaure", "Kiri Kasama", "Kiyawa", "Kaugama", "Maigatari", "Malam Madori", "Miga", "Ringim", "Roni", "Sule Tankarkar", "Taura", "Yankwashi"]
-  },
-  {
-    state: "Kaduna",
-    lgas: ["Birnin Gwari", "Chikun", "Giwa", "Igabi", "Ikara", "Jaba", "Jema'a", "Kachia", "Kaduna North", "Kaduna South", "Kagarko", "Kajuru", "Kaura", "Kauru", "Kubau", "Kudan", "Lere", "Makarfi", "Sabon Gari", "Sanga", "Soba", "Zangon Kataf", "Zaria"]
-  },
-  {
-    state: "Kano",
-    lgas: ["Ajingi", "Albasu", "Bagwai", "Bebeji", "Bichi", "Bunkure", "Dala", "Dambatta", "Dawakin Kudu", "Dawakin Tofa", "Doguwa", "Fagge", "Gabasawa", "Garko", "Garun Mallam", "Gaya", "Gezawa", "Gwale", "Gwarzo", "Kabo", "Kano Municipal", "Karaye", "Kibiya", "Kiru", "Kumbotso", "Kunchi", "Kura", "Madobi", "Makoda", "Minjibir", "Nasarawa", "Rano", "Rimin Gado", "Rogo", "Shanono", "Sumaila", "Takai", "Tarauni", "Tofa", "Tsanyawa", "Tudun Wada", "Ungogo", "Warawa", "Wudil"]
-  },
-  {
-    state: "Katsina",
-    lgas: ["Bakori", "Batagarawa", "Batsari", "Baure", "Bindawa", "Charanchi", "Dandume", "Danja", "Dan Musa", "Daura", "Dutsi", "Dutsin Ma", "Faskari", "Funtua", "Ingawa", "Jibia", "Kafur", "Kaita", "Kankara", "Kankia", "Katsina", "Kurfi", "Kusada", "Mai'Adua", "Malumfashi", "Mani", "Mashi", "Matazu", "Musawa", "Rimi", "Sabuwa", "Safana", "Sandamu", "Zango"]
-  },
-  {
-    state: "Kebbi",
-    lgas: ["Aleiro", "Arewa Dandi", "Argungu", "Augie", "Bagudo", "Birnin Kebbi", "Bunza", "Dandi", "Fakai", "Gwandu", "Jega", "Kalgo", "Koko/Besse", "Maiyama", "Ngaski", "Sakaba", "Shanga", "Suru", "Wasagu/Danko", "Yauri", "Zuru"]
-  },
-  {
-    state: "Kogi",
-    lgas: ["Adavi", "Ajaokuta", "Ankpa", "Bassa", "Dekina", "Ibaji", "Idah", "Igalamela Odolu", "Ijumu", "Kabba/Bunu", "Kogi", "Lokoja", "Mopa Muro", "Ofu", "Ogori/Magongo", "Okehi", "Okene", "Olamaboro", "Omala", "Yagba East", "Yagba West"]
-  },
-  {
-    state: "Kwara",
-    lgas: ["Asa", "Baruten", "Edu", "Ekiti", "Ifelodun", "Ilorin East", "Ilorin South", "Ilorin West", "Irepodun", "Isin", "Kaiama", "Moro", "Offa", "Oke Ero", "Oyun", "Pategi"]
-  },
-  {
-    state: "Lagos",
-    lgas: ["Agege", "Ajeromi-Ifelodun", "Alimosho", "Amuwo-Odofin", "Apapa", "Badagry", "Epe", "Eti Osa", "Ibeju-Lekki", "Ifako-Ijaiye", "Ikeja", "Ikorodu", "Kosofe", "Lagos Island", "Lagos Mainland", "Mushin", "Ojo", "Oshodi-Isolo", "Shomolu", "Surulere"]
-  },
-  {
-    state: "Nasarawa",
-    lgas: ["Akwanga", "Awe", "Doma", "Karu", "Keana", "Keffi", "Kokona", "Lafia", "Nasarawa", "Nasarawa Egon", "Obi", "Toto", "Wamba"]
-  },
-  {
-    state: "Niger",
-    lgas: ["Agaie", "Agwara", "Bida", "Borgu", "Bosso", "Chanchaga", "Edati", "Gbako", "Gurara", "Katcha", "Kontagora", "Lapai", "Lavun", "Magama", "Mariga", "Mashegu", "Mokwa", "Moya", "Paikoro", "Rafi", "Rijau", "Shiroro", "Suleja", "Tafa", "Wushishi"]
-  },
-  {
-      state: "Ogun",
-      lgas: ["Abeokuta North", "Abeokuta South", "Ado-Odo/Ota", "Egbado North", "Egbado South", "Ewekoro", "Ifo", "Ijebu East", "Ijebu North", "Ijebu North East", "Ijebu Ode", "Ikenne", "Imeko Afon", "Ipokia", "Obafemi Owode", "Odeda", "Odogbolu", "Ogun Waterside", "Remo North", "Shagamu"]
-    },
-    {
-      state: "Ondo",
-      lgas: ["Akoko North-East", "Akoko North-West", "Akoko South-East", "Akoko South-West", "Akure North", "Akure South", "Ese Odo", "Idanre", "Ifedore", "Ilaje", "Ile Oluji/Okeigbo", "Irele", "Odigbo", "Okitipupa", "Ondo East", "Ondo West", "Ose", "Owo"]
-    },
-    {
-      state: "Osun",
-      lgas: ["Aiyedaade", "Aiyedire", "Atakumosa East", "Atakumosa West", "Boluwaduro", "Boripe", "Ede North", "Ede South", "Egbedore", "Ejigbo", "Ife Central", "Ife East", "Ife North", "Ife South", "Ifedayo", "Ifelodun", "Ila", "Ilesa East", "Ilesa West", "Irepodun", "Irewole", "Isokan", "Iwo", "Obokun", "Odo Otin", "Ola Oluwa", "Olorunda", "Oriade", "Orolu", "Osogbo"]
-    },
-    {
-      state: "Oyo",
-      lgas: ["Afijio", "Akinyele", "Atiba", "Atisbo", "Egbeda", "Ibadan North", "Ibadan North-East", "Ibadan North-West", "Ibadan South-East", "Ibadan South-West", "Ibarapa Central", "Ibarapa East", "Ibarapa North", "Ido", "Irepo", "Iseyin", "Itesiwaju", "Iwajowa", "Kajola", "Lagelu", "Ogbomosho North", "Ogbomosho South", "Ogo Oluwa", "Olorunsogo", "Oluyole", "Ona Ara", "Orelope", "Ori Ire", "Oyo East", "Oyo West", "Saki East", "Saki West", "Surulere"]
-    },
-    {
-      state: "Plateau",
-      lgas: ["Barkin Ladi", "Bassa", "Bokkos", "Jos East", "Jos North", "Jos South", "Kanam", "Kanke", "Langtang North", "Langtang South", "Mangu", "Mikang", "Pankshin", "Qua'an Pan", "Riyom", "Shendam", "Wase"]
-    },
-    {
-      state: "Rivers",
-      lgas: ["Abua/Odual", "Ahoada East", "Ahoada West", "Akuku-Toru", "Andoni", "Asari-Toru", "Bonny", "Degema", "Eleme", "Emuoha", "Etche", "Gokana", "Ikwerre", "Khana", "Obio/Akpor", "Ogba/Egbema/Ndoni", "Ogu/Bolo", "Okrika", "Omuma", "Opobo/Nkoro", "Oyigbo", "Port Harcourt", "Tai"]
-    },
-    {
-      state: "Sokoto",
-      lgas: ["Binji", "Bodinga", "Dange Shuni", "Gada", "Goronyo", "Gudu", "Gwadabawa", "Illela", "Isa", "Kebbe", "Kware", "Rabah", "Sabon Birni", "Shagari", "Silame", "Sokoto North", "Sokoto South", "Tambuwal", "Tangaza", "Tureta", "Wamako", "Wurno", "Yabo"]
-    },
-    {
-      state: "Taraba",
-      lgas: ["Ardo Kola", "Bali", "Donga", "Gashaka", "Gassol", "Ibi", "Jalingo", "Karim Lamido", "Kurmi", "Lau", "Sardauna", "Takum", "Ussa", "Wukari", "Yorro", "Zing"]
-    },
-    {
-      state: "Yobe",
-      lgas: ["Bade", "Bursari", "Damaturu", "Fika", "Fune", "Geidam", "Gujba", "Gulani", "Jakusko", "Karasuwa", "Machina", "Nangere", "Nguru", "Potiskum", "Tarmuwa", "Yunusari", "Yusufari"]
-    },
-    {
-      state: "Zamfara",
-      lgas: ["Anka", "Bakura", "Birnin Magaji/Kiyaw", "Bukkuyum", "Bungudu", "Gummi", "Gusau", "Kaura Namoda", "Maradun", "Maru", "Shinkafi", "Talata Mafara", "Tsafe", "Zurmi"]
-    },
-]
-
-
-const RegisterFarmer = ({ route }) => {
-  const navigation = useNavigation();
+const RegisterFarmer = () => {
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [consentGiven, setConsentGiven] = useState(false);
-  const [area, setArea] = useState(route.params?.area || '');
-  const [farmYields, setFarmYields] = useState([
-    { year: "", season: "", crop: "", quantity: "" },
-  ]);
-  
-  const [formData, setFormData] = useState({
-    firstname: "",
-    middlename: "",
-    lastname: "",
-    email: "",
-    phone: "",
-    whatsappNumber: "",
-    address: "",
-    nin: "",
-    bvn: "",
-    bankname: "",
-    accountname: "",
-    accountnumber: "",
-    state: "",
-    localGovernment: "",
-    ward: "",
-    pollingUnit: "",
-    soilType: "",
-    pHLevel: "",
-    fertility: "",
-    age: "",
-    maritalStatus: "",
-    highestQualification: "",
-    employmenyStatus: "",
-    gender: "",
-    //primaryCrop: "",
-    produceCategory: "",       // Top level: Livestock, Poultry, Crops
-    cropType: "",              // Crops only: Vegetables, Fruits, etc.
-    primaryProduce: "",        // Final produce selection
-    secondaryCrop: [], // an array
-    farmSize: "",
-    farmingSeason: "",
-    farmOwnership: "",
-    latitude: "",
-    longitude: "",
-    calculatedArea: `${area} square meters`, // Ensure area is included as a string with units
-  });
   const [showWhatsAppInput, setShowWhatsAppInput] = useState(false); // Controls WhatsApp input visibility
-
-  const [subOptions, setSubOptions] = useState([]);
-  const [cropSubOptions, setCropSubOptions] = useState([]);
-
-
-  const [selectedState, setSelectedState] = useState("");
-  const [selectedLGA, setSelectedLGA] = useState("");
-  const [lgas, setLgas] = useState([]);
-
-  const handleStateChange = (stateName) => {
-    setSelectedState(stateName);
-    const stateData = nigeriaStatesLGA.find((state) => state.state === stateName);
-    setLgas(stateData ? stateData.lgas : []);
-    setSelectedLGA(""); // Reset LGA on state change
-  };
+  const navigation = useNavigation();
+  const [selectedState, setSelectedState] = useState('');
+  const [selectedLGA, setSelectedLGA] = useState('');
+  const [selectedWard, setSelectedWard] = useState('');
+  const [selectedPU, setSelectedPU] = useState('');
+  const [formData, setFormData] = useState({
+    nin: '',
+    firstname: '',
+    middlename: '',
+    lastname: '',
+    dob: new Date(),
+    gender: '',
+    maritalStatus: '',
+    email: '',
+    phone: '',
+    whatsappNumber: '',
+    highestQualification: '',
+    employmentStatus: '',
+    state: '',
+    lga: '',
+    ward: '',
+    address: '',
+    addressType: 'home',
+    latitude: '',
+    longitude: '',
+    bvn: '',
+    bankName: '',
+    accountNumber: '',
+    accountName: '',
+    cluster: '',
+    referees: referees,
+    //refereename: '', 
+    //refereeemail: '', 
+    //refereenin: '', 
+    //refereephone: '',    
+  });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [clusterList, setClusterList] = useState([]);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+   const [referees, setReferees] = useState([
+    { refereename: "", refereeemail: "", refereenin: "", refereephone: "" },
+  ]);
 
 
   const generateFarmerID = () => {
@@ -256,21 +71,35 @@ const RegisterFarmer = ({ route }) => {
     return `CCSA-${date.toISOString().replace(/[-:.TZ]/g, "")}`;
   };
 
-  const addYieldEntry = () => {
-    setFarmYields([...farmYields, { year: "", season: "", crop: "", quantity: "" }]);
-  };
 
-  const handleYieldChange = (index, name, value) => {
-    const updatedYields = [...farmYields];
-    updatedYields[index][name] = value;
-    setFarmYields(updatedYields);
-  };
-  
+  const states = nigeriaData.map(item => item.state);
+
+  const lgas = selectedState
+    ? nigeriaData.find(s => s.state === selectedState)?.lgas.map(lga => lga.lga) || []
+    : [];
+
+  const wards = selectedState && selectedLGA
+    ? nigeriaData
+        .find(s => s.state === selectedState)?.lgas
+        .find(lga => lga.lga === selectedLGA)?.wards.map(w => w.ward) || []
+    : [];
+
+  const pollingUnits = selectedState && selectedLGA && selectedWard
+    ? nigeriaData
+        .find(s => s.state === selectedState)?.lgas
+        .find(lga => lga.lga === selectedLGA)?.wards
+        .find(w => w.ward === selectedWard)?.pollingUnits || []
+    : [];
+
+
+
+
 
   const handleChange = (name, value) => {
-    setFormData({ ...formData, [name]: value });
+    setFormData(prev => ({ ...prev, [name]: value }));
 
-     // Check if phone number is exactly 11 digits
+
+    // Check if phone number is exactly 11 digits
      if (name === "phone" && value.length === 11) {
       Alert.alert(
         "WhatsApp Number",
@@ -289,106 +118,143 @@ const RegisterFarmer = ({ route }) => {
       );
     }
 
-
-//....state and LGA dynamic selection
-    if (name === "state") {
-      const selected = statesAndLgas.find((item) => item.state === value);
-      setFilteredLgas(selected ? selected.lgas : []);
-      setFormData({ ...formData, state: value, localGovernment: "" });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-
-
-
-    //.....produce slection
-    if (name === "produceCategory") {
-      setFormData({ ...formData, produceCategory: value, cropType: "", primaryProduce: "" });
-  
-      if (value === "Crops") {
-        setSubOptions(Object.keys(produceCategories.Crops));
-      } else {
-        setSubOptions(produceCategories[value]);
-      }
-    } else if (name === "cropType") {
-      setFormData({ ...formData, cropType: value, primaryProduce: "" });
-      setCropSubOptions(produceCategories.Crops[value]);
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-
   };
 
 
-  const handleCheckboxChange = (crop) => {
-    setFormData((prevState) => {
-      const { secondaryCrop } = prevState;
-      if (secondaryCrop.includes(crop)) {
-        return { ...prevState, secondaryCrop: secondaryCrop.filter((item) => item !== crop) };
-      } else {
-        return { ...prevState, secondaryCrop: [...secondaryCrop, crop] };
-      }
-    });
+  //addd referee dynamically
+    
+// For updating a specific referee's field
+const handleRefereeChange = (index, field, value) => {
+    const updatedReferees = [...referees];
+    updatedReferees[index][field] = value;
+    setReferees(updatedReferees);
+}
+
+  const handleDateChange = (event, selectedDate) => {
+     setShowDatePicker(false);
+    if (selectedDate) {
+      setFormData({ ...formData, dob: selectedDate });
+    }
   };
 
+
+  // Fetch clusters from Firestore
+  useEffect(() => {
+    const fetchClusters = async () => {
+      try {
+        const snapshot = await getDocs(collection(firestore, "clusters"));
+        const clusters = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setClusterList(clusters);
+      } catch (error) {
+        console.error("Error fetching clusters:", error);
+      }
+    };
+
+    fetchClusters();
+  }, []);
+
+
+  // Function to verify the NIN using a real API
+  const verifyNIN = async () => {
+    if (formData.nin.length !== 11) {
+      Alert.alert('Invalid NIN', 'NIN must be exactly 11 digits');
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        API_ENDPOINT,
+        {
+          nin: formData.nin,
+          firstName: formData.firstname,
+          lastName: formData.lastname,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${API_KEY}`  // Customize headers as needed
+          }
+        }
+      );
+
+      setLoading(false);
+
+      if (response.data.success) {
+        // Assume the API returns data in { firstname, middlename, lastname, dob } format.
+        const { firstname, middlename, lastname, dob } = response.data.data;
+        handleChange('firstname', firstname);
+        handleChange('middlename', middlename);
+        handleChange('lastname', lastname);
+        handleChange('dob', new Date(dob)); // Convert the returned date to a Date object
+        Alert.alert('Success', 'NIN verified successfully!');
+      } else {
+        Alert.alert('Verification Failed', response.data.error || 'Invalid NIN');
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error('Error verifying NIN:', error);
+      Alert.alert('Error', 'An error occurred during NIN verification.');
+    }
+  };
 
   const handleSubmit = async () => {
     try {
-      await addDoc(collection(firestore, "farmers"), {
+      const farmerData = {
         ...formData,
-        calculatedArea: `${area} square meters`, // Set fresh value just before submitting
+        dob: formData.dob.toISOString(),
         farmerID: generateFarmerID(),
-        estimatedYields: farmYields,
-        createdAt: serverTimestamp(),
-      });
-      Alert.alert("Success", "Farmer Registered Successfully!");
-      navigation.navigate("Dashboard");
+        state: selectedState,
+        lga: selectedLGA,
+        ward: selectedWard,
+        pollingUnit: selectedPU,
+        referees: referees,
+        createdAt: new Date().toISOString()
+      };
+      await addDoc(collection(firestore, 'farmers'), farmerData);
+      Alert.alert('Success', 'Farmer registered successfully!');
+      // Reset form if desired
       setFormData({
-        firstname: "",
-        middlename: "",
-        lastname: "",
-        email: "",
-        phone: "",
-        whatsappNumber: "",
-        address: "",
-        nin: "",
-        bvn: "",
-        bankname: "",
-        accountname: "",
-        accountnumber: "",
-        state: "",
-        localGovernment: "",
-        ward: "",
-        pollingUnit: "",
-        soilType: "",
-        pHLevel: "",
-        fertility: "",
-        age: "",
-        maritalStatus: "",
-        highestQualification: "",
-        employmenyStatus: "",
-        gender: "",
-        //primaryCrop: "",
-        produceCategory: "",       // Top level: Livestock, Poultry, Crops
-        cropType: "",              // Crops only: Vegetables, Fruits, etc.
-        primaryProduce: "",        // Final produce selection
-        secondaryCrop: [],
-        farmSize: "",
-        farmingSeason: "",
-        farmOwnership: "",
-        latitude: "",
-        longitude: "",
-        coordinateFormat: "",
-        coordinateSystem: "",
-        calculatedArea: ""
+        nin: '',
+        firstname: '',
+        middlename: '',
+        lastname: '',
+        dob: new Date(),
+        gender: '',
+        maritalStatus: '',
+        email: '',
+        phone: '',
+        whatsappNumber: '',
+        highestQualification: '',
+        employmentStatus: '',
+        state: selectedState,
+        lga: selectedLGA,
+        ward: selectedWard,
+        address: '',
+        addressType: 'home',
+        bvn: '',
+        bankName: '',
+        accountNumber: '',
+        accountName: '',
+        cluster: '',
+        latitude: '',
+        longitude: '',
+        refereename: '', 
+        refereeemail: '', 
+        refereenin: '', 
+        refereephone: '',
       });
+       navigation.navigate("Dashboard");
     } catch (error) {
-      console.error("Error adding farmer: ", error);
-      Alert.alert("Error", "Failed to register farmer.");
+      console.error('Error registering farmer:', error);
+      Alert.alert('Error', 'Failed to register farmer.');
     }
   };
 
-  const getCoordinates = async () => {
+
+   const getCoordinates = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
       Alert.alert("Permission Denied", "Allow location access to fetch coordinates.");
@@ -401,10 +267,15 @@ const RegisterFarmer = ({ route }) => {
       longitude: location.coords.longitude.toString(),
     });
   };
-  
+
+
+   const handleAddReferee = () => {
+    setReferees([...referees, { refereename: "", refereeemail: "", refereenin: "", refereephone: "" }]);
+  };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={{ padding: 20 }}>
+
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color="#000" />
@@ -416,446 +287,558 @@ const RegisterFarmer = ({ route }) => {
         </View>
       </View>
 
-      {/* Personal Information */}
-      <View style={styles.sectionHeader}>
-        <Icon name="person" size={24} color="#4CAF50" />
-        <Text style={styles.sectionTitle}>Farmer Personal Information</Text>
-      </View>
 
-      <View style={styles.formGroup}>
-        <TextInput style={styles.input} placeholder="NIN" keyboardType="phone-pad" value={formData.nin} maxLength={11}  onChangeText={(text) => handleChange("nin", text)} />
-        <TextInput style={styles.input} placeholder="First Name" value={formData.firstname} onChangeText={(text) => handleChange("firstname", text)} />
-        <TextInput style={styles.input} placeholder="Middle Name" value={formData.middlename} onChangeText={(text) => handleChange("middlename", text)} />
-        <TextInput style={styles.input} placeholder="Last Name" value={formData.lastname} onChangeText={(text) => handleChange("lastname", text)} />
-        <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" value={formData.email} onChangeText={(text) => handleChange("email", text)} />
-        <TextInput style={styles.input} placeholder="Phone Number" keyboardType="phone-pad" maxLength={11} value={formData.phone} onChangeText={(text) => handleChange("phone", text)} />
-        {/* Show WhatsApp number input if user selects 'No' */}
-        {showWhatsAppInput && (
+
+      {/* Identity Verification Section */}
+      <Card style={styles.card}>
+        <Card.Title title="Identity Verification" />
+        <Card.Content>
           <TextInput
-            style={styles.input}
-            placeholder="WhatsApp Number"
+            label="NIN"
+            value={formData.nin}
+            onChangeText={text => handleChange('nin', text)}
             keyboardType="phone-pad"
             maxLength={11}
+            style={styles.smallInput}
+            contentStyle={styles.smallContent}
+            dense
+          />
+          <Button 
+            mode="contained" 
+            loading={loading} 
+            disabled={loading}
+            onPress={verifyNIN}
+          >
+            {loading ? 'Verifying...' : 'Verify NIN'}
+          </Button>
+        </Card.Content>
+      </Card>
+
+      {/* Personal Information Section */}
+      <Card style={styles.card}>
+        <Card.Title title="Personal Information" />
+        <Card.Content>
+          <TextInput
+            label="First Name"
+            value={formData.firstname}
+            onChangeText={text => handleChange('firstname', text)}
+            style={styles.smallInput}
+            contentStyle={styles.smallContent}
+            dense
+          />
+          <TextInput
+            label="Middle Name"
+            value={formData.middlename}
+            onChangeText={text => handleChange('middlename', text)}
+            style={styles.smallInput}
+            contentStyle={styles.smallContent}
+            dense
+          />
+          <TextInput
+            label="Last Name"
+            value={formData.lastname}
+            onChangeText={text => handleChange('lastname', text)}
+            style={styles.smallInput}
+            contentStyle={styles.smallContent}
+            dense
+          />
+          <TextInput
+            label="Email Address"
+            value={formData.email}
+            onChangeText={text => handleChange('email', text)}
+            keyboardType="email-address"
+            style={styles.smallInput}
+            contentStyle={styles.smallContent}
+            dense
+          />
+          <TextInput
+            label="Phone Number"
+            value={formData.phone}
+            onChangeText={text => handleChange('phone', text)}
+            keyboardType="phone-pad"
+            maxLength={11}
+            style={styles.smallInput}
+            contentStyle={styles.smallContent}
+            dense
+          />
+          <TextInput
+            label="WhatsApp Number"
             value={formData.whatsappNumber}
-            onChangeText={(text) => handleChange("whatsappNumber", text)}
+            onChangeText={text => handleChange('whatsappNumber', text)}
+            keyboardType="phone-pad"
+            maxLength={11}
+            style={styles.smallInput}
+            contentStyle={styles.smallContent}
+            dense
           />
-        )}
-        <Picker selectedValue={formData.state} style={styles.picker} onValueChange={(value) => handleChange("state", value)}>
-          <Picker.Item label="Select State of Residence" value="" />
-          <Picker.Item label="Abia" value="Abia" />
-          <Picker.Item label="Adamawa" value="Adamawa" />
-          <Picker.Item label="Akwa Ibom" value="Akwa Ibom" />
-          <Picker.Item label="Anambra" value="Anambra" />
-          <Picker.Item label="Bauchi" value="Bauchi" />
-          <Picker.Item label="Bayelsa" value="Bayelsa" />
-          <Picker.Item label="Benue" value="Benue" />
-          <Picker.Item label="Borno" value="Borno" />
-          <Picker.Item label="Cross River" value="Cross River" />
-          <Picker.Item label="Delta" value="Delta" />
-          <Picker.Item label="Ebonyi" value="Ebonyi" />
-          <Picker.Item label="Edo" value="Edo" />
-          <Picker.Item label="Ekiti" value="Ekiti" />
-          <Picker.Item label="Enugu" value="Enugu" />
-          <Picker.Item label="Gombe" value="Gombe" />
-          <Picker.Item label="Imo" value="Imo" />
-          <Picker.Item label="Jigawa" value="Jigawa" />
-          <Picker.Item label="Jos" value="Jos" />
-          <Picker.Item label="Kaduna" value="Kaduna" />
-          <Picker.Item label="Kano" value="Kano" />
-          <Picker.Item label="Katsina" value="Katsina" />
-          <Picker.Item label="Kebbi" value="Kebbi" />
-          <Picker.Item label="Kogi" value="Kogi" />
-          <Picker.Item label="Kwara" value="Kwara" />
-          <Picker.Item label="Lagos" value="Lagos" />
-          <Picker.Item label="Nasarawa" value="Nasarawa" />
-          <Picker.Item label="Niger" value="Niger" />
-          <Picker.Item label="Ogun" value="Ogun" />
-          <Picker.Item label="Ondo" value="Ondo" />
-          <Picker.Item label="Osun" value="Osun" />
-          <Picker.Item label="Plateau" value="Plateau" />
-          <Picker.Item label="Rivers" value="Rivers" />
-          <Picker.Item label="Sokoto" value="Sokoto" />
-          <Picker.Item label="Taraba" value="Taraba" />
-          <Picker.Item label="Yobe" value="Yobe" />
-          <Picker.Item label="Zamfara" value="Zamfara" />
-        </Picker>
-        <Picker selectedValue={formData.age} style={styles.picker} onValueChange={(value) => handleChange("age", value)}>
-          <Picker.Item label="Age" value="" />
-          <Picker.Item label="10 - 20" value="10 - 20" />
-          <Picker.Item label="20 - 30" value="20 - 30" />
-          <Picker.Item label="30 - 40" value="30 - 40" />
-          <Picker.Item label="40 - 50" value="40 - 50" />
-          <Picker.Item label="50 - 60" value="50 - 60" />
-          <Picker.Item label="60 - 70" value="60 - 70" />
-          <Picker.Item label="70 - 80" value="70 - 80" />
-        </Picker>
-        <Picker selectedValue={formData.maritalStatus} style={styles.picker} onValueChange={(value) => handleChange("maritalStatus", value)}>
-          <Picker.Item label="Marital Status" value="" />
-          <Picker.Item label="Single" value="Single" />
-          <Picker.Item label="Married" value="Married" />
-          <Picker.Item label="Devorced" value="Devorced" />
-          <Picker.Item label="Widow" value="Widow" />
-          <Picker.Item label="Widower" value="Widower" />
-          <Picker.Item label="Seperated" value="Seperated" />
-          <Picker.Item label="Engaged" value="Engaged" />
-        </Picker>
-        <Picker selectedValue={formData.gender} style={styles.picker} onValueChange={(value) => handleChange("gender", value)}>
-          <Picker.Item label="Select Gender" value="" />
-          <Picker.Item label="Male" value="Male" />
-          <Picker.Item label="Female" value="Female" />
-        </Picker>
-        <Picker selectedValue={formData.highestQualification} style={styles.picker} onValueChange={(value) => handleChange("highestQualification", value)}>
-          <Picker.Item label="Select Highest Qualification" value="" />
-          <Picker.Item label="Ph.D" value="Ph.D" />
-          <Picker.Item label="M.Sc" value="M.Sc" />
-          <Picker.Item label="B.Sc" value="B.Sc" />
-          <Picker.Item label="HND" value="HND" />
-          <Picker.Item label="ND" value="ND" />
-          <Picker.Item label="OND" value="OND" />
-          <Picker.Item label="WASSCE" value="WASSCE" />
-          <Picker.Item label="Primary School Certificate" value="Primary School Certificate" />
-        </Picker>
-        
-        <Picker selectedValue={formData.employmenyStatus} style={styles.picker} onValueChange={(value) => handleChange("employmenyStatus", value)}>
-          <Picker.Item label="Select Employment Status" value="" />
-          <Picker.Item label="Employed" value="Employed" />
-          <Picker.Item label="Unemployed" value="Unemployed" />
-          <Picker.Item label="Self-Employed" value="Self-Employed" />
-          <Picker.Item label="Retired" value="Retired" />
-          <Picker.Item label="Resigned" value="Resigned" />
-        </Picker>
-      </View>
 
-      {/* Farm Information */}
-      <View style={styles.sectionHeader}>
-        <Icon name="agriculture" size={24} color="#4CAF50" />
-        <Text style={styles.sectionTitle}>Farm Information</Text>
-      </View>
-      <View style={styles.formGroup}>
-      
-      <Picker
-        selectedValue={selectedState}
-        style={styles.picker}
-        onValueChange={(itemValue) => handleStateChange(itemValue)}
-      >
-        <Picker.Item label="Select State" value="" />
-        {nigeriaStatesLGA.map((state) => (
-          <Picker.Item key={state.state} label={state.state} value={state.state} />
-        ))}
-      </Picker>
+          <View>
+      <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+        <TextInput
+          mode="outlined"
+          style={styles.smallInput}
+          contentStyle={styles.smallContent}
+          dense
+          editable={false}
+          pointerEvents="none"
+          placeholder="Select Date of Birth"
+          value={formData.dob ? formData.dob.toDateString() : ''}
+        />
+      </TouchableOpacity>
 
-  
-      <Picker
-        selectedValue={selectedLGA}
-        style={styles.picker}
-        enabled={lgas.length > 0}
-        onValueChange={(itemValue) => setSelectedLGA(itemValue)}
-      >
-        <Picker.Item label="Select Local Government Area" value="" />
-        {lgas.map((lga) => (
-          <Picker.Item key={lga} label={lga} value={lga} />
-        ))}
-      </Picker>
+      {showDatePicker && (
+        <DateTimePicker
+          value={formData.dob || new Date()}
+          mode="date"
+          display="default"
+          onChange={handleDateChange}
+        />
+      )}
+    </View>
 
-        <TextInput style={styles.input} placeholder="Ward" value={formData.ward} onChangeText={(text) => handleChange("ward", text)} />
-        <TextInput style={styles.input} placeholder="Polling Unit" value={formData.pollingUnit} onChangeText={(text) => handleChange("pollingUnit", text)} />
-
-        <Picker selectedValue={formData.farmingSeason} style={styles.picker} onValueChange={(value) => handleChange("farmingSeason", value)}>
-          <Picker.Item label="Farming Season" value="" />
-          <Picker.Item label="Dry Season" value="Dry Season" />
-          <Picker.Item label="Rainy Season" value="Rainy Season" />
-          <Picker.Item label="Both Seasons" value="Both Seasons" />
-        </Picker>
-
-        {/*
-        <Picker selectedValue={formData.primaryCrop} style={styles.picker} onValueChange={(value) => handleChange("primaryCrop", value)}>
-          <Picker.Item label="Primary Crop" value="" />
-            <Picker.Item label="Beans" value="Beans" />
-            <Picker.Item label="Cabbage" value="Cabbage" />
-            <Picker.Item label="Carrot" value="Carrot" />
-            <Picker.Item label="Cucumber" value="Cucumber" />
-            <Picker.Item label="Garlic" value="Garlic" />
-            <Picker.Item label="Groundnut" value="Groundnut" />
-            <Picker.Item label="Maize" value="Maize" />
-            <Picker.Item label="Onion" value="Onion" />
-            <Picker.Item label="Potato" value="Potato" />
-            <Picker.Item label="Rice" value="Rice" />
-            <Picker.Item label="Sugarcane" value="Sugarcane" />
-            <Picker.Item label="Tomato" value="Tomato" />
-            <Picker.Item label="Wheat" value="Wheat" />
-            <Picker.Item label="Yam" value="Yam" />
-        </Picker>
-        */}
-
-
-        <Picker
-          selectedValue={formData.produceCategory}
-          style={styles.picker}
-          onValueChange={(value) => handleChange("produceCategory", value)}
-        >
-          <Picker.Item label="Select Produce Category" value="" />
-          <Picker.Item label="Livestock" value="Livestock" />
-          <Picker.Item label="Poultry" value="Poultry" />
-          <Picker.Item label="Crops" value="Crops" />
-        </Picker>
-
-        {formData.produceCategory === "Crops" && (
+          {/* Gender */}
+          <View style={styles.pickerContainer}>
           <Picker
-            selectedValue={formData.cropType}
+            selectedValue={formData.gender}
             style={styles.picker}
-            onValueChange={(value) => handleChange("cropType", value)}
+            onValueChange={(itemValue) => setFormData({ ...formData, gender: itemValue })}
           >
-            <Picker.Item label="Select Crop Type" value="" />
-            {subOptions.map((type, index) => (
-              <Picker.Item key={index} label={type} value={type} />
-            ))}
+            <Picker.Item label="Select Gender" value="" />
+            <Picker.Item label="Male" value="Male" />
+            <Picker.Item label="Female" value="Female" />
+            <Picker.Item label="Other" value="Other" />
           </Picker>
-        )}
-
-        {formData.produceCategory && formData.produceCategory !== "Crops" && (
-          <Picker
-            selectedValue={formData.primaryProduce}
-            style={styles.picker}
-            onValueChange={(value) => handleChange("primaryProduce", value)}
-          >
-            <Picker.Item label="Select Produce" value="" />
-            {subOptions.map((item, index) => (
-              <Picker.Item key={index} label={item} value={item} />
-            ))}
-          </Picker>
-        )}
-
-        {formData.cropType && (
-          <Picker
-            selectedValue={formData.primaryProduce}
-            style={styles.picker}
-            onValueChange={(value) => handleChange("primaryProduce", value)}
-          >
-            <Picker.Item label="Select Produce" value="" />
-            {cropSubOptions.map((item, index) => (
-              <Picker.Item key={index} label={item} value={item} />
-            ))}
-          </Picker>
-        )}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        {/* Secondary Crops as Checkboxes */}
-        <Text style={styles.label}>Select Secondary Crops:</Text>
-        {cropOptions.map((crop) => (
-          <CheckBox
-            key={crop}
-            title={crop}
-            checked={formData.secondaryCrop.includes(crop)}
-            onPress={() => handleCheckboxChange(crop)}
-          />
-        ))}
-        <Picker selectedValue={formData.farmOwnership} style={styles.picker} onValueChange={(value) => handleChange("farmOwnership", value)}>
-          <Picker.Item label="Farm Ownership" value="" />
-          <Picker.Item label="Self Owned" value="Self Owned" />
-          <Picker.Item label="Inherited" value="Inherited" />
-          <Picker.Item label="Rent" value="Rent" />
-        </Picker>
-{/*
-        <Picker selectedValue={formData.soilType} style={styles.picker} onValueChange={(value) => handleChange("soilType", value)}>
-          <Picker.Item label="Select Soil Type" value="" />
-          <Picker.Item label="Clay Soil" value="Clay Soil" />
-          <Picker.Item label="Loamy Soil" value="Loamy Soil" />
-          <Picker.Item label="Sandy Soil" value="Sandy Soil" />
-        </Picker>
-
-        <TextInput style={styles.input} placeholder="Soil pH Level" value={formData.pHLevel} keyboardType="phone-pad" onChangeText={(text) => handleChange("pHLevel", text)} />
-
-        <Picker selectedValue={formData.fertility} style={styles.picker} onValueChange={(value) => handleChange("fertility", value)}>
-          <Picker.Item label="Select Soil Fertility" value="" />
-          <Picker.Item label="Low Fertility" value="Low Fertility" />
-          <Picker.Item label="Medium Fertility" value="Medium Fertility" />
-          <Picker.Item label="High Fertility" value="High Fertility" />
-        </Picker>
-*/}
-
-      </View>
-
-      {/* Farm Yield Information */}
-      <View style={styles.sectionHeader}>
-        <Icon name="agriculture" size={24} color="#4CAF50" />
-        <Text style={styles.sectionTitle}>Estimated Farm Yield</Text>
-      </View>
-      <View style={{ marginTop: 20 }}>
-
-        {farmYields.map((yieldItem, index) => (
-          <View key={index} style={{ marginBottom: 15 }}>
-            <Picker
-              selectedValue={yieldItem.year}
-              style={styles.picker}
-              onValueChange={(value) => handleYieldChange(index, "year", value)}
-            >
-              <Picker.Item label="Select Year" value="" />
-              <Picker.Item label="2021" value="2021" />
-              <Picker.Item label="2022" value="2022" />
-              <Picker.Item label="2023" value="2023" />
-              <Picker.Item label="2024" value="2024" />
-              <Picker.Item label="2025" value="2025" />
-            </Picker>
-
-            <Picker
-              selectedValue={yieldItem.season}
-              style={styles.picker}
-              onValueChange={(value) => handleYieldChange(index, "season", value)}
-            >
-              <Picker.Item label="Select Farming Season" value="" />
-              <Picker.Item label="Rainy Season" value="Rainy Season" />
-              <Picker.Item label="Dry Season" value="Dry Season" />
-            </Picker>
-
-            <Dropdown
-              style={styles.input}
-              containerStyle={styles.dropdownContainer}
-              placeholderStyle={styles.placeholderStyle}
-              selectedTextStyle={styles.selectedTextStyle}
-              inputSearchStyle={styles.inputSearchStyle}
-              iconStyle={styles.iconStyle}
-              data={searchCropOptions}
-              search
-              maxHeight={300}
-              labelField="label"
-              valueField="value"
-              placeholder="Select Crop"
-              searchPlaceholder="Search crop..."
-              value={yieldItem.crop}
-              onChange={item => {
-                handleYieldChange(index, "crop", item.value);
-              }}
-            />
-
-
-            <TextInput
-              style={styles.input}
-              placeholder="Enter Quantity (e.g., 100 bags)"
-              value={yieldItem.quantity}
-              onChangeText={(text) => handleYieldChange(index, "quantity", text)}
-            />
           </View>
-        ))}
 
-        <TouchableOpacity onPress={addYieldEntry} style={styles.addYieldButton}>
-          <Text style={{ color: "#fff", textAlign: "center" }}>+ Add Yield</Text>
+          {/* Marital Status */}
+          <View style={styles.pickerContainer}>
+      <Picker
+        selectedValue={formData.maritalStatus}
+        style={styles.picker}
+        onValueChange={(itemValue) => setFormData({ ...formData, maritalStatus: itemValue })}
+      >
+            <Picker.Item label="Select Marital Status" value="" />
+            <Picker.Item label="Annulled" value="Annulled" />
+            <Picker.Item label="Civil Union" value="Civil Union" />
+            <Picker.Item label="Cohabiting " value="Cohabiting " />
+            <Picker.Item label="Common-law Marriage" value="Common-law Marriage" />
+            <Picker.Item label="Complicated" value="Complicated" />
+            <Picker.Item label="Customarily Married" value="Customarily Married" />
+            <Picker.Item label="Divorced" value="Divorced" />
+            <Picker.Item label="Domestic Partnership" value="Domestic Partnership" />
+            <Picker.Item label="In a Relationship" value="In a Relationship" />
+            <Picker.Item label="Legally Separated" value="Legally Separated" />
+            <Picker.Item label="Married" value="Married" />
+            <Picker.Item label="Partnered" value="Partnered" />
+            <Picker.Item label="Polygamously Married" value="Polygamously Married" />
+            <Picker.Item label="Religiously Married" value="Religiously Married" />
+            <Picker.Item label="Remarried" value="Remarried" />
+            <Picker.Item label="Separated" value="Separated" />
+            <Picker.Item label="Single" value="Single" />
+            <Picker.Item label="Widowed" value="Widowed" />
+      </Picker>
+      </View>
+
+
+          
+          {/* Highest Qualification */}
+        <View style={styles.pickerContainer}>
+      <Picker
+        selectedValue={formData.highestQualification}
+        style={styles.picker}
+        onValueChange={(itemValue) =>
+          setFormData({ ...formData, highestQualification: itemValue })
+        }
+      >
+        <Picker.Item label="Select Highest Qualification" value="" />
+
+        <Picker.Item label="First School Leaving Certificate (FSLC)" value="First School Leaving Certificate (FSLC)" />
+            <Picker.Item label="Primary School Certificate" value="Primary School Certificate" />
+            <Picker.Item label="Junior Secondary School Certificate (JSSCE)" value="Junior Secondary School Certificate (JSSCE)" />
+            <Picker.Item label="Senior Secondary School Certificate (SSCE)" value="Senior Secondary School Certificate (SSCE)" />
+            <Picker.Item label="West African Senior School Certificate Examination (WASSCE)" value="West African Senior School Certificate Examination (WASSCE)" />
+            <Picker.Item label="General Certificate of Education – Ordinary Level (GCE O’Level)" value="General Certificate of Education – Ordinary Level (GCE O’Level)" />
+            <Picker.Item label="National Examination Council Certificate (NECO)" value="National Examination Council Certificate (NECO)" />
+            <Picker.Item label="National Diploma (ND)" value="National Diploma (ND)" />
+            <Picker.Item label="Ordinary National Diploma (OND)" value="Ordinary National Diploma (OND)" />
+            <Picker.Item label="Higher National Diploma (HND)" value="Higher National Diploma (HND)" />
+            <Picker.Item label="Nigerian Certificate in Education (NCE)" value="Nigerian Certificate in Education (NCE)" />
+            <Picker.Item label="Bachelor’s Degree (BA, BSc, BEng, B.Ed, LLB, etc.)" value="Bachelor’s Degree (BA, BSc, BEng, B.Ed, LLB, etc.)" />
+            <Picker.Item label="Postgraduate Diploma (PGD / PGDE)" value="Postgraduate Diploma (PGD / PGDE)" />
+            <Picker.Item label="Master’s Degree (MA, MSc, M.Ed, MBA, LLM, MEng, etc.)" value="Master’s Degree (MA, MSc, M.Ed, MBA, LLM, MEng, etc.)" />
+            <Picker.Item label="Master of Philosophy (MPhil)" value="Master of Philosophy (MPhil)" />
+            <Picker.Item label="Doctorate Degree (PhD, EdD, DSc, DLitt, etc.)" value="Doctorate Degree (PhD, EdD, DSc, DLitt, etc.)" />
+      </Picker>
+      </View>
+
+          {/* Employment Status */}
+          <View style={styles.pickerContainer}>
+      <Picker
+        selectedValue={formData.employmentStatus}
+        style={styles.picker}
+        onValueChange={(itemValue) => setFormData({ ...formData, employmentStatus: itemValue })}
+      >
+        <Picker.Item label="Select Employment Status" value="" />
+        <Picker.Item label="Employed" value="Employed" />
+        <Picker.Item label="Unemployed" value="Unemployed" />
+        <Picker.Item label="Self-Employed" value="Self-Employed" />
+        <Picker.Item label="Retired" value="Retired" />
+        <Picker.Item label="House Wife" value="House Wife" />
+      </Picker>
+      </View>
+
+        </Card.Content>
+      </Card>
+
+
+        {/* Cluster Info Section */}
+      <Card style={styles.card}>
+        <Card.Title title="Cluster Information" />
+      <Card.Content>
+          {/* Cluster */}
+      
+      <View style={styles.pickerContainer}>
+      <Picker
+        style={styles.picker}
+        selectedValue={formData.cluster}
+        onValueChange={(itemValue) => setFormData({ ...formData, cluster: itemValue })}
+      >
+        <Picker.Item label="Select Cluster" value="" style={styles.picker}/>
+        {clusterList.map((cluster) => (
+          <Picker.Item key={cluster.id} label={cluster.name || cluster.id} value={cluster.id} />
+        ))}
+      </Picker>
+      </View>
+        </Card.Content>
+      </Card>
+
+
+
+
+      {/* Location Information Section */}
+      <Card style={styles.card}>
+        <Card.Title title="Contact Information" />
+        <Card.Content>
+          <RadioButton.Group onValueChange={value => handleChange('addressType', value)} value={formData.addressType}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <RadioButton value="home" />
+              <Text>Home Address</Text>
+              <RadioButton value="office" />
+              <Text>Office Address</Text>
+            </View>
+          </RadioButton.Group>
+          
+      <View style={styles.container}>
+    
+    <View style={styles.pickerContainer}>
+      <Picker
+        style={styles.picker}
+        selectedValue={selectedState}
+        onValueChange={(value) => {
+          setSelectedState(value);
+          setSelectedLGA('');
+          setSelectedWard('');
+          setSelectedPU('');
+        }}>
+        <Picker.Item label="Select State of Residence" value="" />
+        {states.map((state, index) => (
+          <Picker.Item key={index} label={state} value={state} />
+        ))}
+      </Picker>
+      </View>
+
+      {lgas.length > 0 && (
+        <>
+          <View style={styles.pickerContainer}>
+          <Picker
+            style={styles.picker}
+            selectedValue={selectedLGA}
+            onValueChange={(value) => {
+              setSelectedLGA(value);
+              setSelectedWard('');
+              setSelectedPU('');
+            }}>
+            <Picker.Item label="Select Local Government Area" value="" />
+            {lgas.map((lga, index) => (
+              <Picker.Item key={index} label={lga} value={lga} />
+            ))}
+          </Picker>
+          </View>
+        </>
+      )}
+
+      {wards.length > 0 && (
+        <>
+          <View style={styles.pickerContainer}>
+          <Picker
+            style={styles.picker}
+            selectedValue={selectedWard}
+            onValueChange={(value) => {
+              setSelectedWard(value);
+              setSelectedPU('');
+            }}>
+            <Picker.Item label="Select Ward" value="" />
+            {wards.map((ward, index) => (
+              <Picker.Item key={index} label={ward} value={ward} />
+            ))}
+          </Picker>
+          </View>
+        </>
+      )}
+
+      {pollingUnits.length > 0 && (
+        <>
+          <View style={styles.pickerContainer}>
+          <Picker
+            style={styles.picker}
+            selectedValue={selectedPU}
+            onValueChange={(value) => setSelectedPU(value)}>
+            <Picker.Item label="Select Polling Unit" value="" />
+            {pollingUnits.map((pu, index) => (
+              <Picker.Item key={index} label={pu} value={pu} />
+            ))}
+          </Picker>
+          </View>
+        </>
+      )}
+    </View>
+
+
+
+          <TextInput
+            label="Address"
+            value={formData.address}
+            onChangeText={text => handleChange('address', text)}
+            multiline
+            style={styles.smallInput}
+            contentStyle={styles.smallContent}
+            dense
+          />
+          <TextInput
+            style={styles.smallInput}
+            contentStyle={styles.smallContent}
+            dense 
+            disabled
+            label="Latitude" value={formData.latitude} onChangeText={(text) => handleChange("latitude", text)} />
+
+          <TextInput 
+            style={styles.smallInput}
+            contentStyle={styles.smallContent}
+            dense 
+            disabled
+            label="Longitude" 
+            value={formData.longitude} 
+            onChangeText={(text) => handleChange("longitude", text)} />
+            <TouchableOpacity  onPress={getCoordinates}>
+              <Icon name="location-on" size={24} color="black"  />
+              <Text >Get Address Coordinates</Text>
+            </TouchableOpacity>
+        </Card.Content>
+      </Card>
+
+
+    
+      {/* Banking Information Section */}
+      <Card style={styles.card}>
+        <Card.Title title="Banking Details" />
+        <Card.Content>
+          
+           {/* Bank Name */}
+           <View style={styles.pickerContainer}>
+      <Picker
+        selectedValue={formData.bankName}
+        style={styles.picker}
+        onValueChange={(itemValue) => setFormData({ ...formData, bankName: itemValue })}
+      >
+        <Picker.Item label="Select Bank" value="" />
+        <Picker.Item label="Access Bank Plc" value="Access Bank Plc" />
+        <Picker.Item label="Alternative Bank Ltd" value="Alternative Bank Ltd" />
+        <Picker.Item label="Citibank Nigeria Ltd" value="Citibank Nigeria Ltd" />
+        <Picker.Item label="Ecobank Nigeria Plc" value="Ecobank Nigeria Plc" />
+        <Picker.Item label="Fidelity Bank Plc" value="Fidelity Bank Plc" />
+        <Picker.Item label="First Bank of Nigeria Ltd" value="First Bank of Nigeria Ltd" />
+        <Picker.Item label="First City Monument Bank Ltd (FCMB)" value="First City Monument Bank Ltd (FCMB)" />
+        <Picker.Item label="Globus Bank Ltd" value="Globus Bank Ltd" />
+        <Picker.Item label="Guaranty Trust Bank Plc (GTBank)" value="Guaranty Trust Bank Plc (GTBank)" />
+        <Picker.Item label="Heritage Bank Plc" value="Heritage Bank Plc" />
+        <Picker.Item label="Jaiz Bank Plc" value="Jaiz Bank Plc" />
+        <Picker.Item label="Keystone Bank Ltd" value="Keystone Bank Ltd" />
+        <Picker.Item label="LOTUS Bank Ltd" value="LOTUS Bank Ltd" />
+        <Picker.Item label="Parallex Bank Ltd" value="Parallex Bank Ltd" />
+        <Picker.Item label="Polaris Bank Ltd" value="Polaris Bank Ltd" />
+        <Picker.Item label="Premium Trust Bank Ltd" value="Premium Trust Bank Ltd" />
+        <Picker.Item label="Providus Bank Ltd" value="Providus Bank Ltd" />
+        <Picker.Item label="Stanbic IBTC Bank Plc" value="Stanbic IBTC Bank Plc" />
+        <Picker.Item label="Standard Chartered Bank Nigeria Ltd" value="Standard Chartered Bank Nigeria Ltd" />
+        <Picker.Item label="Sterling Bank Plc" value="Sterling Bank Plc" />
+        <Picker.Item label="SunTrust Bank Nigeria Ltd" value="SunTrust Bank Nigeria Ltd" />
+        <Picker.Item label="TAJ Bank Ltd" value="TAJ Bank Ltd" />
+        <Picker.Item label="Titan Trust Bank Ltd" value="Titan Trust Bank Ltd" />
+        <Picker.Item label="United Bank for Africa Plc (UBA)" value="United Bank for Africa Plc (UBA)" />
+        <Picker.Item label="Unity Bank Plc" value="Unity Bank Plc" />
+        <Picker.Item label="Wema Bank Plc" value="Wema Bank Plc" />
+        <Picker.Item label="Zenith Bank Plc" value="Zenith Bank Plc" />
+      </Picker>
+      </View>
+
+          <TextInput
+            label="Account Name"
+            value={formData.accountName}
+            onChangeText={text => handleChange('accountName', text)}
+            style={styles.smallInput}
+            contentStyle={styles.smallContent}
+            dense
+          />
+
+          <TextInput
+            label="Account Number"
+            value={formData.accountNumber}
+            onChangeText={text => handleChange('accountNumber', text)}
+            keyboardType="number-pad"
+            maxLength={10}
+            style={styles.smallInput}
+            contentStyle={styles.smallContent}
+            dense
+          />
+          <TextInput
+            label="BVN"
+            value={formData.bvn}
+            onChangeText={text => handleChange('bvn', text)}
+            keyboardType="number-pad"
+            maxLength={11}
+            style={styles.smallInput}
+            contentStyle={styles.smallContent}
+            dense
+          />
+        </Card.Content>
+      </Card>
+
+
+      <Card style={styles.card}>
+        <Card.Title title="Referees Information" />
+        <Card.Content>
+          {referees.map((referee, index) => (
+            <View key={index} style={{ marginBottom: 20 }}>
+              <TextInput
+                label="Referee Name"
+                value={referee.refereename}
+                onChangeText={(text) => handleRefereeChange(index, "refereename", text)}
+                style={styles.smallInput}
+                contentStyle={styles.smallContent}
+                dense
+              />
+              <TextInput
+                label="Referee Email"
+                value={referee.refereeemail}
+                onChangeText={(text) => handleRefereeChange(index, "refereeemail", text)}
+                style={styles.smallInput}
+                contentStyle={styles.smallContent}
+                dense
+              />
+              <TextInput
+                label="Referee NIN"
+                value={referee.refereenin}
+                onChangeText={(text) => handleRefereeChange(index, "refereenin", text)}
+                keyboardType="number-pad"
+                maxLength={11}
+                style={styles.smallInput}
+                contentStyle={styles.smallContent}
+                dense
+              />
+              <TextInput
+                label="Referee Phone"
+                value={referee.refereephone}
+                onChangeText={(text) => handleRefereeChange(index, "refereephone", text)}
+                keyboardType="number-pad"
+                maxLength={11}
+                style={styles.smallInput}
+                contentStyle={styles.smallContent}
+                dense
+              />
+            </View>
+          ))}
+
+          <Button
+            mode="outlined"
+            onPress={handleAddReferee}
+            style={{ marginBottom: 20 }}
+          >
+            Add Referee
+          </Button>
+
+        </Card.Content>
+      </Card>
+
+      
+      {/* Submit Button */}
+      <Button 
+        mode="contained" 
+        //onPress={handleSubmit} 
+        onPress={() => setShowConsentModal(true)}
+        style={styles.button}
+        disabled={loading}>
+          {loading ? "Submitting..." : "Save and Proceed"}
+      </Button>
+
+
+
+          {/*Modal codes */}
+      {showConsentModal && (
+  <Modal
+    animationType="slide"
+    transparent={true}
+    visible={showConsentModal}
+    onRequestClose={() => setShowConsentModal(false)} // required for Android back button
+  >
+    <View style={styles.modalOverlay}>
+      <View style={styles.modalContainer}>
+        <Text style={styles.modalTitle}>Consent Agreement</Text>
+
+        <ScrollView style={styles.modalContent}>
+          <Text style={styles.modalText}>
+            By clicking Submit, you confirm that all information provided is true and accurate to the best of your knowledge. 
+            You also agree to allow the Centre for Climate Smart Agriculture to store and process your data for program-related activities.
+          </Text>
+        </ScrollView>
+
+        <CheckBox
+          title="I agree to the terms and conditions"
+          checked={consentGiven}
+          onPress={() => setConsentGiven(!consentGiven)}
+        />
+
+        <TouchableOpacity
+          style={[styles.submitButton, { backgroundColor: consentGiven ? "#4CAF50" : "#ccc" }]}
+          onPress={() => {
+            if (consentGiven) {
+              setShowConsentModal(false);
+              handleSubmit();
+            }
+          }}
+          disabled={!consentGiven}
+        >
+          <Text style={styles.buttonText}>Submit</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => setShowConsentModal(false)}>
+          <Text style={styles.cancelText}>Cancel</Text>
         </TouchableOpacity>
       </View>
+    </View>
+  </Modal>
+)}
 
 
 
-
-
-      {/* Geospatial Information */}
-      <View style={styles.sectionHeader}>
-        <Icon name="map" size={24} color="#4CAF50" />
-        <Text style={styles.sectionTitle}>Geospatial Information</Text>
-      </View>
-      <Picker selectedValue={formData.coordinateSystem} style={styles.picker} onValueChange={(value) => handleChange("coordinateSystem", value)}>
-          <Picker.Item label="Coordinate System" value="" />
-          <Picker.Item label="WGS 84" value="WGS 84" />
-        </Picker>
-        <Picker selectedValue={formData.coordinateFormat} style={styles.picker} onValueChange={(value) => handleChange("coordinateFormat", value)}>
-          <Picker.Item label="Coordinate Format" value="" />
-            <Picker.Item label="Decimal Degrees" value="Decimal Degrees" />
-            <Picker.Item label="Degrees, Minutes and Seconds" value="Degrees, Minutes and Seconds" />
-            <Picker.Item label="Degrees and Decimal Minutes" value="Degrees and Decimal Minutes" />
-        </Picker>
-        <TextInput style={styles.input} placeholder="Calculated Area" value={formData.calculatedArea} onPress={() => navigation.navigate("FarmAreaCalculator")} onChangeText={(text) => handleChange("calculatedArea", text)} />
-      <View style={styles.formGroup}>
-        <TextInput style={styles.input} placeholder="Latitude" value={formData.latitude} onChangeText={(text) => handleChange("latitude", text)} />
-        <TextInput style={styles.input} placeholder="Longitude" value={formData.longitude} onChangeText={(text) => handleChange("longitude", text)} />
-      </View>
-      <TouchableOpacity style={styles.buttonCoord} onPress={getCoordinates}>
-        <Icon name="location-on" size={24} color="black" style={styles.icon} />
-        <Text style={styles.buttonTextCoord}>Get Farm Coordinates</Text>
-      </TouchableOpacity>
-
-         {/* Banking Details Information */}
-      <View style={styles.sectionHeader}>
-        <Icon name="money" size={24} color="#4CAF50" />
-        <Text style={styles.sectionTitle}>Banking Details</Text>
-      </View>
-
-      <View style={styles.formGroup}>
-        <TextInput style={styles.input} placeholder="BVN" keyboardType="phone-pad" value={formData.bvn} maxLength={11} onChangeText={(text) => handleChange("bvn", text)} />
-        <TextInput style={styles.input} placeholder="Bank Name" value={formData.bankname} onChangeText={(text) => handleChange("bankname", text)} />
-        <TextInput style={styles.input} placeholder="Account Name" value={formData.accountname} onChangeText={(text) => handleChange("accountname", text)} />
-        <TextInput style={styles.input} placeholder="Account Number" value={formData.accountnumber} keyboardType="phone-pad" maxLength={10} onChangeText={(text) => handleChange("accountnumber", text)} />
-     </View>
-
-
-
-      {/* Submit Button */}
-      <TouchableOpacity style={styles.submitButton} /*</ScrollView>onPress={handleSubmit}*/
-        onPress={() => setShowConsentModal(true)}>
-        <Text style={styles.submitButtonText}>Register Farmer</Text>
-      </TouchableOpacity>
-
-
-      {/*Modal codes */}
-      {showConsentModal && (
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Consent Agreement</Text>
-            <ScrollView style={styles.modalContent}>
-              <Text style={styles.modalText}>
-                By clicking Submit, you confirm that all information provided is true and accurate to the best of your knowledge. 
-                You also agree to allow the Centre for Climate Smart Agriculture to store and process your data for program-related activities.
-              </Text>
-            </ScrollView>
-            
-            <CheckBox
-              title="I agree to the terms and conditions"
-              checked={consentGiven}
-              onPress={() => setConsentGiven(!consentGiven)}
-            />
-
-            <TouchableOpacity
-              style={[styles.submitButton, { backgroundColor: consentGiven ? "#4CAF50" : "#ccc" }]}
-              onPress={() => {
-                if (consentGiven) {
-                  setShowConsentModal(false);
-                  handleSubmit();
-                }
-              }}
-              disabled={!consentGiven}
-            >
-              <Text style={styles.buttonText}>Submit</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => setShowConsentModal(false)}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
 
 
     </ScrollView>
-    
   );
 };
 
+
 const styles = {
-  container: {
-    padding: 20,
-    backgroundColor: "#F4F4F4",
-  },
-  header: {
+   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
@@ -870,164 +853,113 @@ const styles = {
     height: 50,
     marginRight: 10,
   },
-  title: {
-    fontSize: 15,
+  searchInput: {
+      backgroundColor: "#fff",
+      padding: 10,
+      borderRadius: 10,
+      marginBottom: 10,
+      borderWidth: 1,
+      height: 55,
+      borderColor: "#ddd",
+    },
+    smallInput: {
+      marginBottom: 8,
+      backgroundColor: 'white',
+      borderColor: "#ddd",
+      borderWidth: 1,
+      fontSize: 14,
+      height: 55, // reduce height
+    },
+
+    smallContent: {
+      fontSize: 14, // text size inside the input
+      paddingVertical: 6, // vertical padding inside input
+    },
+
+    card: {
+      padding: 15,
+      borderRadius: 2,
+      marginBottom: 2,
+      marginTop: 10,
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowOffset: { width: 0, height: 2 },
+      shadowRadius: 5,
+      elevation: 3,
+    },
+    cardTitle: { fontSize: 14, color: "#333" },
+      pickerContainer: {
+      backgroundColor: "#fff",
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: "#ddd",
+      marginBottom: 10,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      height: 50,
+      justifyContent: "center",
+    },
+picker: {
+      width: "100%",
+      height: 55,
+      color: "#333",
+    },
+  label: {
+    marginTop: 16,
     fontWeight: 'bold',
-    color: '#333',
+    fontSize: 16
   },
-  subtitle: { 
-    fontSize: 14, 
-    color: "#666" 
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-    padding: 10,
-    backgroundColor: "#bdd1d0"
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginLeft: 8, // Space between icon and text
-  },
-  formGroup: {
-    marginBottom: 15,
-  },
-  input: {
-    backgroundColor: "white",
-    padding: 12,
-    borderRadius: 5,
-    marginBottom: 10,
-    fontSize: 16,
-  },
-  picker: {
-    backgroundColor: "white",
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  button: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#1E90FF",
-    padding: 12,
-    borderRadius: 5,
-    marginTop: 5,
-    marginBottom: 20
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    textAlign: "center",
-    marginLeft: 10, // Adjust space between the icon and text
-  },
-  buttonCoord: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 0,
-    borderRadius: 5,
-    marginBottom: 20
-  },
-  buttonTextCoord: {
-    color: "black",
-    fontSize: 16,
-    textAlign: "center",
-    marginLeft: 10, // Adjust space between the icon and text
-  },
-  addYieldButton: {
-    backgroundColor: "#4CAF50",
-    padding: 10,
-    borderRadius: 8,
-    marginVertical: 10,
-  },
-  submitButton: {
-    backgroundColor: "#231369",
-    padding: 15,
-    borderRadius: 5,
-    marginTop: 20,
-  },
-  submitButtonText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  icon: {
-    marginRight: 10, // Adjust space between the icon and the text
-  },
-//...Modal Information
-  modalOverlay: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
+  //...Modal Information
+   modalOverlay: {
+    flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 999,
+    padding: 20,
   },
   modalContainer: {
-    width: '90%',
     backgroundColor: '#fff',
-    borderRadius: 10,
     padding: 20,
-    elevation: 10,
+    borderRadius: 12,
+    width: '100%',
+    maxHeight: '80%',
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
   },
   modalContent: {
-    maxHeight: 200,
-    marginBottom: 10,
+    marginBottom: 15,
   },
   modalText: {
-    fontSize: 14,
-    color: '#333',
-    textAlign: 'justify'
+    fontSize: 16,
+    lineHeight: 22,
   },
- 
+  submitButton: {
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
   cancelText: {
     textAlign: 'center',
+    color: 'red',
     marginTop: 10,
-    color: '#f44336',
-    fontWeight: 'bold',
   },
-  
+  button: {
+    width: "100%",
+    backgroundColor: "#13274F",
+    padding: 15,
+    marginTop: 20,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+}
 
-  //search csv stylings
-  dropdown: {
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
-    marginBottom: 10,
-  },
-  dropdownContainer: {
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-  },
-  placeholderStyle: {
-    fontSize: 14,
-    color: '#999',
-  },
-  selectedTextStyle: {
-    fontSize: 14,
-    color: '#333',
-  },
-  inputSearchStyle: {
-    height: 40,
-    fontSize: 14,
-    color: '#333',
-  },
-  iconStyle: {
-    width: 20,
-    height: 20,
-  },
-  
-};
 
 export default RegisterFarmer;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Image, ScrollView, TouchableOpacity, Button } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../firebaseConfig';
@@ -57,36 +57,52 @@ const FarmerDetail = () => {
             <Text style={styles.detail}><Text style={styles.label}>Last Name:</Text> {farmer.lastname}</Text>
             <Text style={styles.detail}><Text style={styles.label}>First Name:</Text> {farmer.firstname}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Middle Name:</Text> {farmer.middlename}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Phone:</Text> {farmer.phone}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Phone Number:</Text> {farmer.phone}</Text>
             <Text style={styles.detail}><Text style={styles.label}>WhatsApp Number:</Text> {farmer.whatsappNumber}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Email:</Text> {farmer.email}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Gender:</Text> {farmer.gender}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Age:</Text> {farmer.age}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>DoB:</Text> {farmer.dob}</Text>
             <Text style={styles.detail}><Text style={styles.label}>NIN:</Text> {farmer.nin}</Text>
             <Text style={styles.detail}><Text style={styles.label}>BVN:</Text> {farmer.bvn}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>State of Residence:</Text> {farmer.state}</Text>
+            
             <Text style={styles.detail}><Text style={styles.label}>Highest Qualification:</Text> {farmer.highestQualification}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Marital State:</Text> {farmer.maritalStatus}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Employment Status:</Text> {farmer.employmenyStatus}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Employment Status:</Text> {farmer.employmentStatus}</Text>
+          </View>
+
+          <View style={styles.detailSection}>
+            <Text style={styles.sectionTitle}><Icon name="map-marker" size={18} color="#ffffff" /> Cluster Information</Text>
+            <Text style={styles.detail}><Text style={styles.label}></Text> {farmer.cluster}</Text>
+          </View>
+
+          <View style={styles.detailSection}>
+            <Text style={styles.sectionTitle}><Icon name="map-marker" size={18} color="#ffffff" /> Contact Information</Text>
+            <Text style={styles.detail}><Text style={styles.label}>State of Residence:</Text> {farmer.state}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>LGA of Residence:</Text> {farmer.lga}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Ward of Residence:</Text> {farmer.ward}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Contact Place:</Text> {farmer.addressType}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Address:</Text> {farmer.address}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Coordinates:</Text> {farmer.latitude}, {farmer.longitude}</Text>
           </View>
 
           <View style={styles.detailSection}>
             <Text style={styles.sectionTitle}><Icon name="leaf" size={18} color="#ffffff" /> Farm Information</Text>
             <Text style={styles.detail}><Text style={styles.label}>Farm Size:</Text> {farmer.farmSize} acres</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Primary Crops:</Text> {farmer.primaryCrop}</Text>
+             <Text style={styles.detail}><Text style={styles.label}>Produce Category:</Text> {farmer.produceCategory}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Primary Produce:</Text> {farmer.primaryProduce}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Secondary Crops:</Text> {farmer.secondaryCrop?.length > 0 ? farmer.secondaryCrop.join(", ") : "N/A"}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Farm Ownership:</Text> {farmer.farmOwnership}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Farm Location:</Text> {farmer.state}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Local Government:</Text> {farmer.localGovernment}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Ward:</Text> {farmer.ward}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Polling Unit:</Text> {farmer.pollingUnit}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Farm State:</Text> {farmer.farmState}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Local Government:</Text> {farmer.farmLocalGovernment}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Ward:</Text> {farmer.farmWard}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Polling Unit:</Text> {farmer.farmPollingUnit}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Farming Season:</Text> {farmer.farmingSeason}</Text>
           </View>
 
           {/* Displaying Soil Information */}
            
           <View style={styles.detailSection}>
-                <Text style={styles.sectionTitle}><Icon name="flask" size={18} color="#ffffff" /> Soil Information</Text>
+                <Text style={styles.sectionTitle}><Icon name="flask" size={18} color="#ffffff" />Farm Soil Information</Text>
                 <Text style={styles.detail}><Text style={styles.label}>Soil Type:</Text> {farmer.soilType}</Text>
                 <Text style={styles.detail}><Text style={styles.label}>Soild pH Level:</Text> {farmer.pHLevel}</Text>
                 <Text style={styles.detail}><Text style={styles.label}>Soil Fertility:</Text> {farmer.fertility}</Text>
@@ -118,8 +134,8 @@ const FarmerDetail = () => {
 
 
           <View style={styles.detailSection}>
-            <Text style={styles.sectionTitle}><Icon name="map-marker" size={18} color="#ffffff" /> Geospatial Information</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Coordinates:</Text> {farmer.latitude}, {farmer.longitude}</Text>
+            <Text style={styles.sectionTitle}><Icon name="map-marker" size={18} color="#ffffff" /> Farm Geospatial Information</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Coordinates:</Text> {farmer.farmLatitude}, {farmer.farmLongitude}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Coordinate system:</Text> {farmer.coordinateSystem}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Coordinate Format:</Text> {farmer.coordinateFormat}</Text>
           </View>
@@ -127,15 +143,59 @@ const FarmerDetail = () => {
           <View style={styles.detailSection}>
             <Text style={styles.sectionTitle}><Icon name="money" size={18} color="#ffffff" /> Banking Information</Text>
             <Text style={styles.detail}><Text style={styles.label}>BVN:</Text> {farmer.bvn}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Bank Name:</Text> {farmer.bankname}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Account Name:</Text> {farmer.accountname}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Account Number:</Text> {farmer.accountnumber}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Bank Name:</Text> {farmer.bankName}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Account Name:</Text> {farmer.accountName}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Account Number:</Text> {farmer.accountNumber}</Text>
           </View>
+
+
+         <View style={styles.detailSection}>
+  <Text style={styles.sectionTitle}>
+    <Icon name="user" size={18} color="#ffffff" /> Referees Information
+  </Text>
+
+  {farmer.referees && farmer.referees.length > 0 ? (
+    farmer.referees.map((referee, index) => (
+      <View key={index} style={{ marginBottom: 15 }}>
+        <Text style={styles.detail}>
+          <Text style={styles.label}>NIN:</Text> {referee.refereenin}
+        </Text>
+        <Text style={styles.detail}>
+          <Text style={styles.label}>Name:</Text> {referee.refereename}
+        </Text>
+        <Text style={styles.detail}>
+          <Text style={styles.label}>Email:</Text> {referee.refereeemail}
+        </Text>
+        <Text style={styles.detail}>
+          <Text style={styles.label}>Phone Number:</Text> {referee.refereephone}
+        </Text>
+      </View>
+    ))
+  ) : (
+    <Text style={styles.detail}>No referee information available.</Text>
+  )}
+</View>
+
+
+
+
+
 
         </View>
       ) : (
         <Text style={styles.noData}>No farmer data available.</Text>
       )}
+
+
+      <TouchableOpacity
+        mode="contained"
+        onPress={() => navigation.navigate('UpdateFarmerForm', { id })}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Update Farmer Records</Text>
+      </TouchableOpacity>
+
+
     </ScrollView>
   );
 };
@@ -191,6 +251,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     padding: 10,
     backgroundColor: "#7998b9",
+  },
+  button: {
+    width: "100%",
+    backgroundColor: "#13274F",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   detail: {
     fontSize: 16,
