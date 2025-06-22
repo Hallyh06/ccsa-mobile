@@ -11,9 +11,11 @@ import { collection, addDoc, getDocs } from 'firebase/firestore';
 import { firestore } from '../firebaseConfig';  // your Firestore configuration
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import nigeriaData from './data/nigeriaData.json';
+import { verifyNIN } from '../utils/ninVerification'; // Adjust path if different
 
-const API_ENDPOINT = 'https://api.example.com/verify-nin'; // Replace with your provider's URL
-const API_KEY = 'YOUR_API_KEY_HERE'; // Replace with your provider's API key
+
+const API_ENDPOINT = 'https://e-nvs.digitalpulseapi.net/api/lookup/nin'; // Replace with your provider's URL
+const API_KEY = 'CCVb73G1EDmPpU4z13s4BWA'; // Replace with your provider's API key
 
 
 
@@ -96,7 +98,8 @@ const RegisterFarmer = () => {
 
 
   const handleChange = (name, value) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    //setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
 
     // Check if phone number is exactly 11 digits
@@ -137,6 +140,9 @@ const handleRefereeChange = (index, field, value) => {
     }
   };
 
+  const dobAsDate = new Date(formData.dob);
+const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+
 
   // Fetch clusters from Firestore
   useEffect(() => {
@@ -158,53 +164,54 @@ const handleRefereeChange = (index, field, value) => {
 
 
   // Function to verify the NIN using a real API
-  const verifyNIN = async () => {
+   const handleVerifyNIN = async () => {
     if (formData.nin.length !== 11) {
       Alert.alert('Invalid NIN', 'NIN must be exactly 11 digits');
       return;
     }
+
     setLoading(true);
-    try {
-      const response = await axios.post(
-        API_ENDPOINT,
-        {
-          nin: formData.nin,
-          firstName: formData.firstname,
-          lastName: formData.lastname,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${API_KEY}`  // Customize headers as needed
-          }
-        }
-      );
 
-      setLoading(false);
+    //const result = await verifyNIN({ nin, firstName, lastName });
+    const result = await verifyNIN({
+      nin: formData.nin,
+      firstName: formData.firstname,
+      lastName: formData.lastname,
+    });
 
-      if (response.data.success) {
-        // Assume the API returns data in { firstname, middlename, lastname, dob } format.
-        const { firstname, middlename, lastname, dob } = response.data.data;
-        handleChange('firstname', firstname);
-        handleChange('middlename', middlename);
-        handleChange('lastname', lastname);
-        handleChange('dob', new Date(dob)); // Convert the returned date to a Date object
-        Alert.alert('Success', 'NIN verified successfully!');
-      } else {
-        Alert.alert('Verification Failed', response.data.error || 'Invalid NIN');
-      }
-    } catch (error) {
-      setLoading(false);
-      console.error('Error verifying NIN:', error);
-      Alert.alert('Error', 'An error occurred during NIN verification.');
+    setLoading(false);
+
+    if (result.success) {
+      const data = result.data;
+
+      console.log("✅ Verified NIN response:", data);
+
+      // ✅ Auto-fill the returned data
+      setFormData((prev) => ({
+        ...prev,
+        firstname: data.firstname || prev.firstname,
+        middlename: data.middlename || prev.middlename,
+        lastname: data.surname || prev.lastname,
+        dob: data.dateofbirth || prev.dob,
+        email: data.email || prev.email,
+        phone: data.msisdn || prev.phone,
+        gender: data.gender || prev.gender,
+      }));
+
+
+      Alert.alert('Success', 'NIN verified successfully!');
+      console.log('Verified data:', result.data);
+    } else {
+      Alert.alert('Verification Failed', result.error);
     }
   };
+  
 
   const handleSubmit = async () => {
     try {
       const farmerData = {
         ...formData,
-        dob: formData.dob.toISOString(),
+        dob: formData.dob,
         farmerID: generateFarmerID(),
         state: selectedState,
         lga: selectedLGA,
@@ -253,6 +260,12 @@ const handleRefereeChange = (index, field, value) => {
     }
   };
 
+  const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toDateString(); // e.g. 'Wed Mar 22 1995'
+};
+
 
    const getCoordinates = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -291,66 +304,66 @@ const handleRefereeChange = (index, field, value) => {
 
       {/* Identity Verification Section */}
       <Card style={styles.card}>
-        <Card.Title title="Identity Verification" />
-        <Card.Content>
-          <TextInput
-            label="NIN"
-            value={formData.nin}
-            onChangeText={text => handleChange('nin', text)}
-            keyboardType="phone-pad"
-            maxLength={11}
-            style={styles.smallInput}
-            contentStyle={styles.smallContent}
-            dense
-          />
-          <Button 
-            mode="contained" 
-            loading={loading} 
-            disabled={loading}
-            onPress={verifyNIN}
-          >
-            {loading ? 'Verifying...' : 'Verify NIN'}
-          </Button>
-        </Card.Content>
-      </Card>
+  <Card.Title title="Identity Verification" />
+  <Card.Content>
+    <TextInput
+      label="NIN"
+      value={formData.nin}
+       onChangeText={(text) => handleChange('nin', text)}
+      keyboardType="phone-pad"
+      maxLength={11}
+      style={styles.smallInput}
+      contentStyle={styles.smallContent}
+      dense
+    />
+    <Button
+      mode="contained"
+      loading={loading}
+      disabled={loading}
+      onPress={handleVerifyNIN}
+    >
+      {loading ? 'Verifying...' : 'Verify NIN'}
+    </Button>
+  </Card.Content>
+</Card>
 
       {/* Personal Information Section */}
       <Card style={styles.card}>
         <Card.Title title="Personal Information" />
         <Card.Content>
           <TextInput
-            label="First Name"
-            value={formData.firstname}
-            onChangeText={text => handleChange('firstname', text)}
-            style={styles.smallInput}
-            contentStyle={styles.smallContent}
-            dense
-          />
+      label="First Name"
+      value={formData.firstname}
+      onChangeText={(text) => handleChange('firstname', text)}
+      style={styles.smallInput}
+      contentStyle={styles.smallContent}
+      dense
+    />
           <TextInput
-            label="Middle Name"
-            value={formData.middlename}
-            onChangeText={text => handleChange('middlename', text)}
-            style={styles.smallInput}
-            contentStyle={styles.smallContent}
-            dense
-          />
+      label="Middle Name"
+      value={formData.middlename}
+      onChangeText={(text) => handleChange('middlename', text)}
+      style={styles.smallInput}
+      contentStyle={styles.smallContent}
+      dense
+    />
+    <TextInput
+      label="Last Name"
+      value={formData.lastname}
+      onChangeText={(text) => handleChange('lastname', text)}
+      style={styles.smallInput}
+      contentStyle={styles.smallContent}
+      dense
+    />
           <TextInput
-            label="Last Name"
-            value={formData.lastname}
-            onChangeText={text => handleChange('lastname', text)}
-            style={styles.smallInput}
-            contentStyle={styles.smallContent}
-            dense
-          />
-          <TextInput
-            label="Email Address"
-            value={formData.email}
-            onChangeText={text => handleChange('email', text)}
-            keyboardType="email-address"
-            style={styles.smallInput}
-            contentStyle={styles.smallContent}
-            dense
-          />
+      label="Email Address"
+      value={formData.email}
+      onChangeText={text => handleChange('email', text)}
+      keyboardType="email-address"
+      style={styles.smallInput}
+      contentStyle={styles.smallContent}
+      dense
+    />
           <TextInput
             label="Phone Number"
             value={formData.phone}
@@ -374,26 +387,34 @@ const handleRefereeChange = (index, field, value) => {
 
           <View>
       <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-        <TextInput
-          mode="outlined"
-          style={styles.smallInput}
-          contentStyle={styles.smallContent}
-          dense
-          editable={false}
-          pointerEvents="none"
-          placeholder="Select Date of Birth"
-          value={formData.dob ? formData.dob.toDateString() : ''}
-        />
-      </TouchableOpacity>
+      <TextInput
+        mode="outlined"
+        style={styles.smallInput}
+        contentStyle={styles.smallContent}
+        dense
+        editable={false}
+        pointerEvents="none"
+        placeholder="Select Date of Birth"
+        value={formatDate(formData.dob)}
+      />
+    </TouchableOpacity>
 
-      {showDatePicker && (
-        <DateTimePicker
-          value={formData.dob || new Date()}
-          mode="date"
-          display="default"
-          onChange={handleDateChange}
-        />
-      )}
+    {showDatePicker && (
+      <DateTimePicker
+        value={formData.dob ? new Date(formData.dob) : new Date()}
+        mode="date"
+        display="default"
+        maximumDate={new Date()}
+        onChange={(event, selectedDate) => {
+  setShowDatePicker(false);
+  if (selectedDate) {
+    const formatted = selectedDate.toISOString().split('T')[0];
+    handleChange('dob', formatted);
+  }
+}}
+
+      />
+    )}
     </View>
 
           {/* Gender */}

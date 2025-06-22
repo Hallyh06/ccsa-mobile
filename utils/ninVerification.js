@@ -1,7 +1,7 @@
 // utils/ninVerification.js
 
 export const verifyNIN = async ({ nin, firstName, lastName }) => {
-  const apiKey = "YOUR_API_KEY"; // Replace with your actual API key
+  const apiKey = 'CCVb73G1EDmPpU4z13s4BWA'; // Replace with your actual API key
   const url = `https://e-nvs.digitalpulseapi.net/api/lookup/nin?op=level-4&nin=${nin}&first_name=${firstName}&last_name=${lastName}`;
 
   try {

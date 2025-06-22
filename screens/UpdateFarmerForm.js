@@ -1,6 +1,6 @@
 // screens/UpdateFarmerForm.js
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, TextInput, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, ScrollView, TextInput, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -61,17 +61,17 @@ const UpdateFarmerForm = () => {
     pHLevel: "",
     fertility: "",
     produceCategory: "",       // Top level: Livestock, Poultry, Crops
-        cropType: "",              // Crops only: Vegetables, Fruits, etc.
-        primaryProduce: "",        // Final produce selection
-        secondaryCrop: [],
-        farmSize: "",
-        farmingSeason: "",
-        farmOwnership: "",
-        farmLatitude: "",
-        farmLongitude: "",
-        farmCoordinateFormat: "",
-        farmCoordinateSystem: "",
-        farmCalculatedArea: ""
+    cropType: "",              // Crops only: Vegetables, Fruits, etc.
+    primaryProduce: "",        // Final produce selection
+    secondaryCrop: [],
+    farmSize: "",
+    farmingSeason: "",
+    farmOwnership: "",
+    farmLatitude: "",
+    farmLongitude: "",
+    farmCoordinateFormat: "",
+    farmCoordinateSystem: "",
+    farmCalculatedArea: ""
   });
 
 
@@ -139,9 +139,17 @@ const UpdateFarmerForm = () => {
 
 
   const handleUpdate = async () => {
+    Alert.alert("Confirm Update", "Are you sure you want to update this farmer's details?", [
+    { text: "Cancel", style: "cancel" },
+    {
+      text: "Yes", onPress: async () => {
+
     const docRef = doc(firestore, 'farmers', id);
     await updateDoc(docRef, formData);
     navigation.goBack(); // Navigate back to detail screen
+     }
+    }
+  ]);
   };
 
   const handleCheckboxChange = (crop) => {
@@ -172,55 +180,35 @@ const UpdateFarmerForm = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
 
-        <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                  <Icon name="arrow-back" size={24} color="#000" />
-                </TouchableOpacity>
-                <Image source={require("../assets/cosmologo.png")} style={styles.logo} />
-                <View>
-                  <Text style={styles.title}>Centre for Climate Smart Agriculture</Text>
-                  <Text style={styles.subtitle}>Farmer Registration</Text>
-                </View>
-              </View>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="arrow-back" size={24} color="#000" />
+        </TouchableOpacity>
+        <Image source={require("../assets/cosmologo.png")} style={styles.logo} />
+          <View>
+            <Text style={styles.title}>Centre for Climate Smart Agriculture</Text>
+            <Text style={styles.subtitle}>Farmer Registration</Text>
+          </View>
+      </View>
 
-      <Text style={styles.title}>Update Farmer Details</Text>
+      <Text style={{backgroundColor: "#d2d2d2", textAlign: "center", fontWeight: "bold", padding: "20px", fontSize: 20, marginBottom: "30px"}}>Update Farmer Details</Text>
 
       {/* Farm Information */}
       <View style={styles.sectionHeader}>
         <Icon name="agriculture" size={24} color="#4CAF50" />
         <Text style={styles.sectionTitle}>Farm Information</Text>
       </View>
+
       <View style={styles.formGroup}>
-      
-      
         <Picker selectedValue={formData.farmingSeason} style={styles.picker} onValueChange={(value) => handleChange("farmingSeason", value)}>
           <Picker.Item label="Farming Season" value="" />
           <Picker.Item label="Dry Season" value="Dry Season" />
           <Picker.Item label="Rainy Season" value="Rainy Season" />
           <Picker.Item label="Both Seasons" value="Both Seasons" />
         </Picker>
+      </View>
 
-        {/*
-        <Picker selectedValue={formData.primaryCrop} style={styles.picker} onValueChange={(value) => handleChange("primaryCrop", value)}>
-          <Picker.Item label="Primary Crop" value="" />
-            <Picker.Item label="Beans" value="Beans" />
-            <Picker.Item label="Cabbage" value="Cabbage" />
-            <Picker.Item label="Carrot" value="Carrot" />
-            <Picker.Item label="Cucumber" value="Cucumber" />
-            <Picker.Item label="Garlic" value="Garlic" />
-            <Picker.Item label="Groundnut" value="Groundnut" />
-            <Picker.Item label="Maize" value="Maize" />
-            <Picker.Item label="Onion" value="Onion" />
-            <Picker.Item label="Potato" value="Potato" />
-            <Picker.Item label="Rice" value="Rice" />
-            <Picker.Item label="Sugarcane" value="Sugarcane" />
-            <Picker.Item label="Tomato" value="Tomato" />
-            <Picker.Item label="Wheat" value="Wheat" />
-            <Picker.Item label="Yam" value="Yam" />
-        </Picker>
-        */}
-
-
+      <View style={styles.formGroup}>
         <Picker
           selectedValue={formData.produceCategory}
           style={styles.picker}
@@ -231,8 +219,10 @@ const UpdateFarmerForm = () => {
           <Picker.Item label="Poultry" value="Poultry" />
           <Picker.Item label="Crops" value="Crops" />
         </Picker>
+      </View>
 
         {formData.produceCategory === "Crops" && (
+      <View style={styles.formGroup}>
           <Picker
             selectedValue={formData.cropType}
             style={styles.picker}
@@ -243,9 +233,12 @@ const UpdateFarmerForm = () => {
               <Picker.Item key={index} label={type} value={type} />
             ))}
           </Picker>
+      </View>
         )}
+     
 
         {formData.produceCategory && formData.produceCategory !== "Crops" && (
+      <View style={styles.formGroup}>
           <Picker
             selectedValue={formData.primaryProduce}
             style={styles.picker}
@@ -256,9 +249,13 @@ const UpdateFarmerForm = () => {
               <Picker.Item key={index} label={item} value={item} />
             ))}
           </Picker>
+      </View>
         )}
+      
 
+      
         {formData.cropType && (
+      <View style={styles.formGroup}>
           <Picker
             selectedValue={formData.primaryProduce}
             style={styles.picker}
@@ -269,24 +266,12 @@ const UpdateFarmerForm = () => {
               <Picker.Item key={index} label={item} value={item} />
             ))}
           </Picker>
+      </View>
         )}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      
         {/* Secondary Crops as Checkboxes */}
         <Text style={styles.label}>Select Secondary Crops:</Text>
+      <View style={styles.formGroup}>
         <Dropdown
               style={styles.input}
               containerStyle={styles.dropdownContainer}
@@ -306,6 +291,9 @@ const UpdateFarmerForm = () => {
                 handleYieldChange(index, "crop", item.value);
               }}
             />
+      </View>
+
+      <View style={styles.formGroup}>
         <Picker selectedValue={formData.farmOwnership} style={styles.picker} onValueChange={(value) => handleChange("farmOwnership", value)}>
           <Picker.Item label="Farm Ownership" value="" />
           <Picker.Item label="Corporative" value="Corporative" />
@@ -316,37 +304,40 @@ const UpdateFarmerForm = () => {
           <Picker.Item label="Rent" value="Rent" />
           <Picker.Item label="Self Owned" value="Self Owned" />
         </Picker>
+      </View>
 
+      <View style={styles.formGroup}>
         <Picker selectedValue={formData.soilType} style={styles.picker} onValueChange={(value) => handleChange("soilType", value)}>
-          <Picker.Item label="Select Soil Type" value="" />
-          <Picker.Item label="Clay Soil" value="Clay Soil" />
+        <Picker.Item label="Select Soil Type" value="" />
+        <Picker.Item label="Clay Soil" value="Clay Soil" />
         <Picker.Item label="Loamy Soil" value="Loamy Soil" />
         <Picker.Item label="Sandy Soil" value="Sandy Soil" />
         <Picker.Item label="Silty Soil" value="Silty Soil" />
         <Picker.Item label="Peaty Soil" value="Peaty Soil" />
         </Picker>
-
+      </View>
         <TextInput style={styles.input} placeholder="Soil pH Level" value={formData.pHLevel} keyboardType="phone-pad" onChangeText={(text) => handleChange("pHLevel", text)} />
 
+        <View style={styles.formGroup}>
         <Picker selectedValue={formData.fertility} style={styles.picker} onValueChange={(value) => handleChange("fertility", value)}>
           <Picker.Item label="Select Soil Fertility" value="" />
           <Picker.Item label="Low Fertility" value="Low Fertility" />
           <Picker.Item label="Medium Fertility" value="Medium Fertility" />
           <Picker.Item label="High Fertility" value="High Fertility" />
         </Picker>
+        </View>
 
-
-      </View>
 
       {/* Farm Yield Information */}
       <View style={styles.sectionHeader}>
         <Icon name="agriculture" size={24} color="#4CAF50" />
-        <Text style={styles.sectionTitle}>Estimated Farm Yield</Text>
+        <Text style={styles.sectionTitle}>Farm Estimated Farm Yield</Text>
       </View>
       <View style={{ marginTop: 20 }}>
 
         {farmYields.map((yieldItem, index) => (
           <View key={index} style={{ marginBottom: 15 }}>
+            <View style={styles.formGroup}>
             <Picker
               selectedValue={yieldItem.year}
               style={styles.picker}
@@ -359,17 +350,20 @@ const UpdateFarmerForm = () => {
               <Picker.Item label="2024" value="2024" />
               <Picker.Item label="2025" value="2025" />
             </Picker>
+          </View>
 
+          <View style={styles.formGroup}>
             <Picker
               selectedValue={yieldItem.season}
               style={styles.picker}
-              onValueChange={(value) => handleYieldChange(index, "season", value)}
-            >
-              <Picker.Item label="Select Farming Season" value="" />
-              <Picker.Item label="Rainy Season" value="Rainy Season" />
-              <Picker.Item label="Dry Season" value="Dry Season" />
+              onValueChange={(value) => handleYieldChange(index, "season", value)}>
+                <Picker.Item label="Select Farming Season" value="" />
+                <Picker.Item label="Rainy Season" value="Rainy Season" />
+                <Picker.Item label="Dry Season" value="Dry Season" />
             </Picker>
+          </View>
 
+          <View style={styles.formGroup}>
             <Dropdown
               style={styles.input}
               containerStyle={styles.dropdownContainer}
@@ -389,7 +383,7 @@ const UpdateFarmerForm = () => {
                 handleYieldChange(index, "crop", item.value);
               }}
             />
-
+          </View>
 
             <TextInput
               style={styles.input}
@@ -400,105 +394,126 @@ const UpdateFarmerForm = () => {
           </View>
         ))}
 
-        <TouchableOpacity onPress={addYieldEntry} style={styles.addYieldButton}>
-          <Text style={{ color: "#fff", textAlign: "center" }}>+ Add Yield</Text>
+        <TouchableOpacity onPress={addYieldEntry} style={styles.buttonCoord}>
+          <Text style={styles.buttonTextCoord}>+ Add Yield</Text>
         </TouchableOpacity>
+
       </View>
-
-
-
 
 
       {/* Geospatial Information */}
       <View style={styles.sectionHeader}>
         <Icon name="map" size={24} color="#4CAF50" />
-        <Text style={styles.sectionTitle}>Geospatial Information</Text>
+        <Text style={styles.sectionTitle}>Farm Geospatial Information</Text>
       </View>
 
-      
-      
-          
-            <Picker
-              selectedValue={selectedState}
-              style={styles.picker}
-              onValueChange={(value) => {
-                setSelectedState(value);
-                setSelectedLGA('');
-                setSelectedWard('');
-                setSelectedPU('');
-              }}>
-              <Picker.Item label="Select State of Farm Land" value="" />
-              {states.map((state, index) => (
-                <Picker.Item key={index} label={state} value={state} />
-              ))}
-            </Picker>
+      <View style={styles.formGroup}>
+        <Picker
+          selectedValue={selectedState}
+          style={styles.picker}
+          onValueChange={(value) => {
+            setSelectedState(value);
+            handleChange("farmState", value);
+            setSelectedLGA('');
+            setSelectedWard('');
+            setSelectedPU('');
+          }}
+          >
+          <Picker.Item label="Select State of Farm Land" value="" />
+            {states.map((state, index) => (
+              <Picker.Item key={index} label={state} value={state} />
+            ))}
+        </Picker>
+      </View>
       
             {lgas.length > 0 && (
               <>
+              <View style={styles.formGroup}>
                 <Picker
                   selectedValue={selectedLGA}
                   style={styles.picker}
                   onValueChange={(value) => {
                     setSelectedLGA(value);
+                    handleChange("farmLocalGovernment", value);
                     setSelectedWard('');
                     setSelectedPU('');
-                  }}>
+                  }}
+                >
                   <Picker.Item label="Select Local Government Area" value="" />
                   {lgas.map((lga, index) => (
                     <Picker.Item key={index} label={lga} value={lga} />
                   ))}
                 </Picker>
+
+                </View>
               </>
             )}
       
             {wards.length > 0 && (
               <>
+              <View style={styles.formGroup}>
                 <Picker
                   selectedValue={selectedWard}
                   style={styles.picker}
                   onValueChange={(value) => {
                     setSelectedWard(value);
+                    handleChange("farmWard", value);
                     setSelectedPU('');
-                  }}>
+                  }}
+                >
                   <Picker.Item label="Select Ward" value="" />
                   {wards.map((ward, index) => (
                     <Picker.Item key={index} label={ward} value={ward} />
                   ))}
                 </Picker>
+
+                </View>
               </>
             )}
       
             {pollingUnits.length > 0 && (
               <>
                 <Text style={styles.label}>Polling Unit</Text>
+                <View style={styles.formGroup}>
                 <Picker
                   selectedValue={selectedPU}
                   style={styles.picker}
-                  onValueChange={(value) => setSelectedPU(value)}>
+                  onValueChange={(value) => {
+                    setSelectedPU(value);
+                    handleChange("farmPollingUnit", value);
+                  }}
+                >
                   <Picker.Item label="Select Polling Unit" value="" />
                   {pollingUnits.map((pu, index) => (
                     <Picker.Item key={index} label={pu} value={pu} />
                   ))}
                 </Picker>
+
+                </View>
               </>
             )}
 
+        <View style={styles.formGroup}>
+          <Picker selectedValue={formData.farmCoordinateSystem} style={styles.picker} onValueChange={(value) => handleChange("farmCoordinateSystem", value)}>
+            <Picker.Item label="Coordinate System" value="" />
+            <Picker.Item label="WGS 84" value="WGS 84" />
+          </Picker>
+        </View>
 
-      <Picker selectedValue={formData.coordinateSystem} style={styles.picker} onValueChange={(value) => handleChange("coordinateSystem", value)}>
-          <Picker.Item label="Coordinate System" value="" />
-          <Picker.Item label="WGS 84" value="WGS 84" />
-        </Picker>
-        <Picker selectedValue={formData.coordinateFormat} style={styles.picker} onValueChange={(value) => handleChange("coordinateFormat", value)}>
-          <Picker.Item label="Coordinate Format" value="" />
+        <View style={styles.formGroup}>
+          <Picker selectedValue={formData.farmCoordinateFormat} style={styles.picker} onValueChange={(value) => handleChange("farmCoordinateFormat", value)}>
+            <Picker.Item label="Coordinate Format" value="" />
             <Picker.Item label="Degrees, Minutes and Seconds" value="Degrees, Minutes and Seconds" />
-        </Picker>
-        <TextInput style={styles.input} placeholder="Calculated Area" value={formData.calculatedArea} onPress={() => navigation.navigate("FarmAreaCalculator")} onChangeText={(text) => handleChange("calculatedArea", text)} />
-      <View style={styles.formGroup}>
-        <TextInput style={styles.input} didabled placeholder="Latitude" value={formData.latitude} onChangeText={(text) => handleChange("latitude", text)} />
-        <TextInput style={styles.input} didabled placeholder="Longitude" value={formData.longitude} onChangeText={(text) => handleChange("longitude", text)} />
-      </View>
+          </Picker>
+        </View>
+
+        <TextInput style={styles.input} placeholder="Calculated Area" value={formData.farmCalculatedArea} onPress={() => navigation.navigate("FarmAreaCalculator")} onChangeText={(text) => handleChange("farmCalculatedArea", text)} />
+        <TextInput style={styles.input} editable={false} placeholder="Latitude" value={formData.farmLatitude} onChangeText={(text) => handleChange("latitude", text)} />
+        <TextInput style={styles.input} editable={false} placeholder="Longitude" value={formData.farmLongitude} onChangeText={(text) => handleChange("longitude", text)} />
+      
+
       <TouchableOpacity style={styles.buttonCoord} onPress={getCoordinates}>
-        <Icon name="location-on" size={24} color="black" style={styles.icon} />
+        <Icon name="location-on" size={24} color="gray" style={styles.icon} />
         <Text style={styles.buttonTextCoord}>Get Farm Coordinates</Text>
       </TouchableOpacity>
 
@@ -509,8 +524,9 @@ const UpdateFarmerForm = () => {
       <TouchableOpacity
         style={styles.buttonX} 
         mode="contained" 
+        loading={loading} disabled={loading}
         onPress={handleUpdate}>
-          <Text style={styles.buttonText}>Save Changes</Text>
+          <Text style={styles.buttonText}>{loading ? "Updating..." : "Save Changes"}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -550,10 +566,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   input: {
-    backgroundColor: '#fff',
-    marginBottom: 15,
-    padding: 10,
-    borderRadius: 8,
+    backgroundColor: "#fff",
+      padding: 10,
+      borderRadius: 10,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: "#ddd",
   },
   sectionHeader: {
     flexDirection: "row",
@@ -573,6 +591,10 @@ const styles = StyleSheet.create({
   },
   formGroup: {
     marginBottom: 15,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
   },
   input: {
     backgroundColor: "white",
@@ -582,9 +604,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   picker: {
-    backgroundColor: "white",
-    borderRadius: 5,
-    marginBottom: 10,
+      width: "100%",
+      height: 55,
+      color: "#333",
   },
   button: {
     flexDirection: "row",

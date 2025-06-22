@@ -71,6 +71,14 @@ const FarmerDetail = () => {
           </View>
 
           <View style={styles.detailSection}>
+            <Text style={styles.sectionTitle}><Icon name="money" size={18} color="#ffffff" /> Banking Information</Text>
+            <Text style={styles.detail}><Text style={styles.label}>BVN:</Text> {farmer.bvn}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Bank Name:</Text> {farmer.bankName}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Account Name:</Text> {farmer.accountName}</Text>
+            <Text style={styles.detail}><Text style={styles.label}>Account Number:</Text> {farmer.accountNumber}</Text>
+          </View>
+
+          <View style={styles.detailSection}>
             <Text style={styles.sectionTitle}><Icon name="map-marker" size={18} color="#ffffff" /> Cluster Information</Text>
             <Text style={styles.detail}><Text style={styles.label}></Text> {farmer.cluster}</Text>
           </View>
@@ -138,14 +146,6 @@ const FarmerDetail = () => {
             <Text style={styles.detail}><Text style={styles.label}>Coordinates:</Text> {farmer.farmLatitude}, {farmer.farmLongitude}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Coordinate system:</Text> {farmer.coordinateSystem}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Coordinate Format:</Text> {farmer.coordinateFormat}</Text>
-          </View>
-
-          <View style={styles.detailSection}>
-            <Text style={styles.sectionTitle}><Icon name="money" size={18} color="#ffffff" /> Banking Information</Text>
-            <Text style={styles.detail}><Text style={styles.label}>BVN:</Text> {farmer.bvn}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Bank Name:</Text> {farmer.bankName}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Account Name:</Text> {farmer.accountName}</Text>
-            <Text style={styles.detail}><Text style={styles.label}>Account Number:</Text> {farmer.accountNumber}</Text>
           </View>
 
 
