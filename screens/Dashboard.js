@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Dimensions, Animated } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Dimensions, Animated, ActivityIndicator  } from "react-native";
 import { getAuth, signOut } from "firebase/auth";
-import { collection, getDocs, onSnapshot  } from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, onSnapshot  } from "firebase/firestore";
 import { firestore } from "../firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
 import { BarChart, PieChart } from "react-native-chart-kit";
 import { Ionicons } from "@expo/vector-icons";
 import { Appbar, Card } from "react-native-paper";
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
 
 const Dashboard = () => {
   const [totalFarmers, setTotalFarmers] = useState(0);
@@ -18,6 +20,11 @@ const Dashboard = () => {
   const [farmersByFarmingSeason, setfarmersByFarmingSeason] = useState({});
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuAnim] = useState(new Animated.Value(-250));
+
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [currentDateTime, setCurrentDateTime] = useState('');
+
 
   const navigation = useNavigation();
   const auth = getAuth();
@@ -69,6 +76,52 @@ const Dashboard = () => {
     setMenuOpen(!menuOpen);
   };
 
+
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+
+        if (currentUser) {
+          const userDocRef = doc(firestore, 'users', currentUser.uid);
+          const userDocSnap = await getDoc(userDocRef);
+
+          if (userDocSnap.exists()) {
+            setUserData(userDocSnap.data());
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+
+    // Set current date and time
+    const now = new Date();
+    const formatted = now.toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+    });
+    setCurrentDateTime(formatted);
+  }, []);
+
+  if (loading) return <ActivityIndicator style={{ marginTop: 40 }} />;
+
+  if (!userData) return <Text>No user data found.</Text>;
+
+
+
+
   return (
     <View style={styles.container}>
       <Appbar.Header style={styles.header}>
@@ -78,7 +131,7 @@ const Dashboard = () => {
       </Appbar.Header>
 
       {/* Update to bring menu forward */}
-      <Animated.View style={[styles.menuContainer, { left: menuAnim, zIndex: 1, opacity: menuOpen ? 1 : 0.8 }]}>  
+     <Animated.View style={[styles.menuContainer, { left: menuAnim, zIndex: 1, opacity: menuOpen ? 1 : 0.8 }]}>  
       <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("RegsiterFarmer")}>
           <Ionicons name="person-add" size={20} color="white" />
           <Text style={styles.menuText}>Register Farmer</Text>
@@ -102,6 +155,35 @@ const Dashboard = () => {
       </Animated.View>
 
       <ScrollView style={styles.content}>
+
+        <View style={styles.container}>
+      <Card style={styles.card}>
+        <Card.Title title="My Profile" style={{backgroundColor:"#bdd1d0", marginBottom: "45px", color: "#ffffff", fontWeight: "bolder"}} left={() => <Icon name="person" size={28} color="#4CAF50"/>} />
+        <Card.Content>
+          <View style={styles.infoRow}>
+            <Icon name="person-outline" size={20} color="#555" style={styles.icon} />
+            <Text style={styles.text}>Name: {userData.name}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Icon name="email" size={20} color="#555" style={styles.icon} />
+            <Text style={styles.text}>Email: {userData.email}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Icon name="access-time" size={20} color="#555" style={styles.icon} />
+            <Text style={styles.text}>Login: {currentDateTime}</Text>
+          </View>
+        </Card.Content>
+      </Card>
+    </View>
+
+
+
+
+
+
+
+
+ {/*
         <Card style={styles.card}>
           <Text style={styles.title}>Total Number of Registered Farmers</Text>
           <Text style={styles.number}>{totalFarmers}</Text>
@@ -198,6 +280,7 @@ const Dashboard = () => {
         />
         <Text style={styles.chartTitle}>Registered farmer based on farming season</Text>
         </Card>
+*/}
 
       </ScrollView>
     </View>
@@ -238,7 +321,7 @@ const styles = {
   },
   card: {
     backgroundColor: "white", 
-    padding: 20, borderRadius: 10,
+    padding: 10, borderRadius: 10,
     alignItems: "center", 
     marginBottom: 20, 
     elevation: 5,
@@ -270,6 +353,19 @@ const styles = {
     backgroundGradientTo: "#FFF",
     decimalPlaces: 0,
     color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
+  },
+
+   infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  icon: {
+    marginRight: 10,
+  },
+  text: {
+    fontSize: 16,
+    color: '#333',
   },
 };
 

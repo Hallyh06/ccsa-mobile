@@ -1,7 +1,7 @@
 // screens/UpdateFarmerForm.js
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, TextInput, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
-import { Button, Text } from 'react-native-paper';
+import { Text, RadioButton,  Button, Card } from 'react-native-paper';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { firestore } from '../firebaseConfig';
@@ -15,13 +15,96 @@ import { CheckBox } from "react-native-elements"; // Import CheckBox
 
 const cropOptions = ["Beans", "Cabbage", "Carrot", "Cassava", "Corn", "Onions", "Rice", "Tomato", "Wheat"]; // Crop List
 
-const searchCropOptions = [
+const searchCropOptionsXX = [
   { label: "Maize", value: "Maize" },
   { label: "Rice", value: "Rice" },
   { label: "Cassava", value: "Cassava" },
   { label: "Yam", value: "Yam" },
   { label: "Beans", value: "Beans" },
 ];
+
+const searchCropOptions = [
+  "Amaranth",
+  "Apple",
+  "Avocado",
+  "Banana",
+  "Bambara Nut",
+  "Basil",
+  "Bay Leaf",
+  "Beans",
+  "Beetroot",
+  "Bitter Leaf",
+  "Broccoli",
+  "Cabbage",
+  "Carrot",
+  "Cassava",
+  "Cauliflower",
+  "Celery",
+  "Chili Pepper",
+  "Clove",
+  "Coconut",
+  "Cocoa Yam",
+  "Corn", // Optional alias for Maize
+  "Coriander",
+  "Cowpea",
+  "Cucumber",
+  "Date",
+  "Dill",
+  "Egusi",
+  "Fennel",
+  "Garden Egg",
+  "Garlic",
+  "Ginger",
+  "Grapes",
+  "Green Beans",
+  "Groundnut",
+  "Irish Potato",
+  "Lemon",
+  "Lettuce",
+  "Leek",
+  "Lime",
+  "Maize",
+  "Mango",
+  "Melon",
+  "Millet",
+  "Mint",
+  "Mustard",
+  "Okra",
+  "Onion",
+  "Orange",
+  "Oregano",
+  "Papaya",
+  "Parsley",
+  "Peas",
+  "Pear",
+  "Pepper",
+  "Pineapple",
+  "Plantain",
+  "Pumpkin",
+  "Rice",
+  "Rosemary",
+  "Sage",
+  "Scent Leaf",
+  "Sesame",
+  "Sorrel",
+  "Sorghum",
+  "Soybean",
+  "Spinach",
+  "Sugarcane",
+  "Sweet Potato",
+  "Tangerine",
+  "Taro",
+  "Thyme",
+  "Tomato",
+  "Turmeric",
+  "Watermelon",
+  "Wheat",
+  "Yam",
+  "Zucchini"
+];
+
+
+
 
 //Produce Categories
 const produceCategories = {
@@ -50,6 +133,9 @@ const UpdateFarmerForm = () => {
 
   const [area, setArea] = useState(route.params?.area || '');
   const [farmYields, setFarmYields] = useState([{ year: "", season: "", crop: "", quantity: "" }]);
+
+  const [secondaryCropInput, setSecondaryCropInput] = useState('');
+const [suggestions, setSuggestions] = useState([]);
 
   const [formData, setFormData] = useState({
     // Add more fields as needed
@@ -146,6 +232,10 @@ const UpdateFarmerForm = () => {
 
     const docRef = doc(firestore, 'farmers', id);
     await updateDoc(docRef, formData);
+   
+ 
+
+ Alert.alert('Success', 'Farmer data updated.');
     navigation.goBack(); // Navigate back to detail screen
      }
     }
@@ -192,7 +282,8 @@ const UpdateFarmerForm = () => {
       </View>
 
       <Text style={{backgroundColor: "#d2d2d2", textAlign: "center", fontWeight: "bold", padding: "20px", fontSize: 20, marginBottom: "30px"}}>Update Farmer Details</Text>
-
+<Card style={styles.card}>
+  <Card.Content></Card.Content>
       {/* Farm Information */}
       <View style={styles.sectionHeader}>
         <Icon name="agriculture" size={24} color="#4CAF50" />
@@ -269,29 +360,76 @@ const UpdateFarmerForm = () => {
       </View>
         )}
       
-        {/* Secondary Crops as Checkboxes */}
-        <Text style={styles.label}>Select Secondary Crops:</Text>
-      <View style={styles.formGroup}>
-        <Dropdown
-              style={styles.input}
-              containerStyle={styles.dropdownContainer}
-              placeholderStyle={styles.placeholderStyle}
-              selectedTextStyle={styles.selectedTextStyle}
-              inputSearchStyle={styles.inputSearchStyle}
-              iconStyle={styles.iconStyle}
-              data={searchCropOptions}
-              search
-              maxHeight={300}
-              labelField="label"
-              valueField="value"
-              placeholder="Select Crop"
-              searchPlaceholder="Search crop..."
-              value={cropOptions}
-              onChange={item => {
-                handleYieldChange(index, "crop", item.value);
-              }}
-            />
-      </View>
+        {/* Secondary Crops as a dropdown search */}
+      <Text style={styles.label}>Search and Select Secondary Crops:</Text>
+<TextInput
+  mode="outlined"
+  placeholder="Type a crop and press space or comma"
+  value={secondaryCropInput}
+  onChangeText={(text) => {
+    setSecondaryCropInput(text);
+
+    // Update suggestions
+    const filtered = searchCropOptions.filter(
+      item =>
+        item.toLowerCase().includes(text.toLowerCase()) &&
+        !formData.secondaryCrop.includes(item)
+    );
+    setSuggestions(filtered);
+  }}
+  onSubmitEditing={() => {
+    const clean = secondaryCropInput.trim().replace(/,+$/, '');
+    if (clean && searchCropOptions.includes(clean)) {
+      setFormData(prev => ({
+        ...prev,
+        secondaryCrop: [...prev.secondaryCrop, clean],
+      }));
+    }
+    setSecondaryCropInput('');
+    setSuggestions([]);
+  }}
+  style={styles.input}
+/>
+{suggestions.length > 0 && (
+  <View style={styles.suggestionBox}>
+    {suggestions.map((item, index) => (
+      <TouchableOpacity
+        key={index}
+        onPress={() => {
+          setFormData(prev => ({
+            ...prev,
+            secondaryCrop: [...prev.secondaryCrop, item],
+          }));
+          setSecondaryCropInput('');
+          setSuggestions([]);
+        }}
+      >
+        <Text style={styles.suggestionItem}>{item}</Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+)}
+
+
+    <View style={styles.chipContainer}>
+  {formData.secondaryCrop.map((crop, index) => (
+    <View key={index} style={styles.chip}>
+      <Text>{crop}</Text>
+      <TouchableOpacity
+        onPress={() => {
+          setFormData(prev => ({
+            ...prev,
+            secondaryCrop: prev.secondaryCrop.filter(c => c !== crop),
+          }));
+        }}
+      >
+        <Text style={styles.removeIcon}>✕</Text>
+      </TouchableOpacity>
+    </View>
+  ))}
+</View>
+
+
 
       <View style={styles.formGroup}>
         <Picker selectedValue={formData.farmOwnership} style={styles.picker} onValueChange={(value) => handleChange("farmOwnership", value)}>
@@ -326,8 +464,12 @@ const UpdateFarmerForm = () => {
           <Picker.Item label="High Fertility" value="High Fertility" />
         </Picker>
         </View>
+</Card>
 
 
+
+<Card style={styles.card}>
+  <Card.Content></Card.Content>
       {/* Farm Yield Information */}
       <View style={styles.sectionHeader}>
         <Icon name="agriculture" size={24} color="#4CAF50" />
@@ -399,7 +541,10 @@ const UpdateFarmerForm = () => {
         </TouchableOpacity>
 
       </View>
+      </Card>
 
+<Card style={styles.card}>
+  <Card.Content></Card.Content>
 
       {/* Geospatial Information */}
       <View style={styles.sectionHeader}>
@@ -517,6 +662,7 @@ const UpdateFarmerForm = () => {
         <Text style={styles.buttonTextCoord}>Get Farm Coordinates</Text>
       </TouchableOpacity>
 
+</Card>
       {/* Add more fields as needed */}
 
       
@@ -552,6 +698,29 @@ const styles = StyleSheet.create({
     height: 50,
     marginRight: 10,
   },
+  card: {
+      padding: 15,
+      borderRadius: 2,
+      marginBottom: 2,
+      marginTop: 10,
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowOffset: { width: 0, height: 2 },
+      shadowRadius: 5,
+      elevation: 3,
+    },
+    cardTitle: { fontSize: 14, color: "#333" },
+      pickerContainer: {
+      backgroundColor: "#fff",
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: "#ddd",
+      marginBottom: 10,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      height: 50,
+      justifyContent: "center",
+    },
   buttonX: {
     width: "100%",
     backgroundColor: "#13274F",
@@ -657,6 +826,39 @@ const styles = StyleSheet.create({
   icon: {
     marginRight: 10, // Adjust space between the icon and the text
   },
+
+  //for the secodaryCrop search csv
+  chipContainer: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  marginVertical: 10,
+},
+chip: {
+  flexDirection: 'row',
+  backgroundColor: '#e0e0e0',
+  paddingHorizontal: 10,
+  paddingVertical: 5,
+  borderRadius: 20,
+  margin: 5,
+  alignItems: 'center',
+},
+removeIcon: {
+  color: 'red',
+  marginLeft: 8,
+  fontWeight: 'bold',
+},
+suggestionBox: {
+  backgroundColor: 'white',
+  borderColor: '#ccc',
+  borderWidth: 1,
+  maxHeight: 120,
+},
+suggestionItem: {
+  padding: 10,
+  borderBottomColor: '#eee',
+  borderBottomWidth: 1,
+},
+
 });
 
 export default UpdateFarmerForm;

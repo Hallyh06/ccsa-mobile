@@ -33,7 +33,7 @@ const RegisterFarmer = () => {
     firstname: '',
     middlename: '',
     lastname: '',
-    dob: new Date(),
+    dob: null,
     gender: '',
     maritalStatus: '',
     email: '',
@@ -90,7 +90,7 @@ const RegisterFarmer = () => {
     ? nigeriaData
         .find(s => s.state === selectedState)?.lgas
         .find(lga => lga.lga === selectedLGA)?.wards
-        .find(w => w.ward === selectedWard)?.pollingUnits || []
+        .find(w => w.ward === selectedWard)?.polling_units || []
     : [];
 
 
@@ -208,6 +208,12 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
   
 
   const handleSubmit = async () => {
+
+     if (!formData.cluster) {
+        Alert.alert('Validation Error', 'Please select a Cluster before submitting.');
+        return; // ❌ Stop the form from submitting
+      }
+
     try {
       const farmerData = {
         ...formData,
@@ -228,7 +234,7 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
         firstname: '',
         middlename: '',
         lastname: '',
-        dob: new Date(),
+        dob: '',
         gender: '',
         maritalStatus: '',
         email: '',
@@ -260,10 +266,11 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
     }
   };
 
-  const formatDate = (dateStr) => {
-  if (!dateStr) return '';
-  const date = new Date(dateStr);
-  return date.toDateString(); // e.g. 'Wed Mar 22 1995'
+  const formatDate = (dateObj) => {
+    if (!dateObj) return '';
+    const date = new Date(dateObj);
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+    //return date.toDateString(); // e.g. 'Wed Mar 22 1995'
 };
 
 
@@ -304,7 +311,12 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
 
       {/* Identity Verification Section */}
       <Card style={styles.card}>
-  <Card.Title title="Identity Verification" />
+
+      <View style={styles.sectionHeader}>
+        <Icon name="person" size={24} color="#4CAF50" />
+        <Text style={styles.sectionTitle}>Identity Verification</Text>
+      </View>
+
   <Card.Content>
     <TextInput
       label="NIN"
@@ -317,7 +329,7 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
       dense
     />
     <Button
-      mode="contained"
+      mode="outlined"
       loading={loading}
       disabled={loading}
       onPress={handleVerifyNIN}
@@ -329,7 +341,11 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
 
       {/* Personal Information Section */}
       <Card style={styles.card}>
-        <Card.Title title="Personal Information" />
+        <View style={styles.sectionHeader}>
+        <Icon name="person" size={24} color="#4CAF50" />
+        <Text style={styles.sectionTitle}>Personal Information</Text>
+      </View>
+
         <Card.Content>
           <TextInput
       label="First Name"
@@ -338,6 +354,7 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
       style={styles.smallInput}
       contentStyle={styles.smallContent}
       dense
+      editable={false}
     />
           <TextInput
       label="Middle Name"
@@ -346,6 +363,7 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
       style={styles.smallInput}
       contentStyle={styles.smallContent}
       dense
+      editable={false}
     />
     <TextInput
       label="Last Name"
@@ -354,6 +372,7 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
       style={styles.smallInput}
       contentStyle={styles.smallContent}
       dense
+      editable={false}
     />
           <TextInput
       label="Email Address"
@@ -395,13 +414,13 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
         editable={false}
         pointerEvents="none"
         placeholder="Select Date of Birth"
-        value={formatDate(formData.dob)}
+        value={formData.dob ? formatDate(formData.dob) : ''}
       />
     </TouchableOpacity>
 
     {showDatePicker && (
       <DateTimePicker
-        value={formData.dob ? new Date(formData.dob) : new Date()}
+        value={formData.dob instanceof Date ? formData.dob : new Date()} 
         mode="date"
         display="default"
         maximumDate={new Date()}
@@ -514,7 +533,10 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
 
         {/* Cluster Info Section */}
       <Card style={styles.card}>
-        <Card.Title title="Cluster Information" />
+        <View style={styles.sectionHeader}>
+        <Icon name="group" size={24} color="#4CAF50" />
+        <Text style={styles.sectionTitle}>Cluster Information</Text>
+      </View>
       <Card.Content>
           {/* Cluster */}
       
@@ -538,7 +560,11 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
 
       {/* Location Information Section */}
       <Card style={styles.card}>
-        <Card.Title title="Contact Information" />
+        <View style={styles.sectionHeader}>
+        <Icon name="house" size={24} color="#4CAF50" />
+        <Text style={styles.sectionTitle}>Contact Information</Text>
+      </View>
+        
         <Card.Content>
           <RadioButton.Group onValueChange={value => handleChange('addressType', value)} value={formData.addressType}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -661,7 +687,10 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
     
       {/* Banking Information Section */}
       <Card style={styles.card}>
-        <Card.Title title="Banking Details" />
+        <View style={styles.sectionHeader}>
+        <Icon name="money" size={24} color="#4CAF50" />
+        <Text style={styles.sectionTitle}>Banking Details</Text>
+      </View>
         <Card.Content>
           
            {/* Bank Name */}
@@ -736,7 +765,12 @@ const formattedDob = dobAsDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
 
 
       <Card style={styles.card}>
-        <Card.Title title="Referees Information" />
+        
+        <View style={styles.sectionHeader}>
+        <Icon name="verified-user" size={24} color="#4CAF50" />
+        <Text style={styles.sectionTitle}>Referees Information</Text>
+      </View>
+
         <Card.Content>
           {referees.map((referee, index) => (
             <View key={index} style={{ marginBottom: 20 }}>
@@ -869,6 +903,7 @@ const styles = {
     marginRight: 5,
     padding: 5,
   },
+
   logo: {
     width: 50,
     height: 50,
@@ -897,6 +932,22 @@ const styles = {
       paddingVertical: 6, // vertical padding inside input
     },
 
+    sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+    padding: 10,
+    backgroundColor: "#bdd1d0"
+  },
+  title:{
+    textAlign: "center",
+  },
+    sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+    marginLeft: 8, // Space between icon and text
+  },
     card: {
       padding: 15,
       borderRadius: 2,
